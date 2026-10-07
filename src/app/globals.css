@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #061426;
+  --foreground: #f7faff;
 }
 
 @theme inline {
@@ -10,17 +10,84 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Backgrounds */
+  --color-navy-950: #061426;
+  --color-navy-900: #081b33;
+  --color-navy-800: #0b2342;
+
+  /* Surfaces */
+  --color-surface: #101f35;
+  --color-surface-2: #132842;
+  --color-line: #1f3a5c;
+
+  /* Accents */
+  --color-cyan: #20c7e8;
+  --color-cyan-bright: #25d9ff;
+  --color-blue: #268cff;
+  --color-gold: #ffb000;
+  --color-gold-bright: #ffc928;
+  --color-success: #00c896;
+  --color-danger: #ff5d6c;
+
+  /* Text */
+  --color-ink: #f7faff;
+  --color-ink-dim: #91a7c3;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Cinematic backdrop: deep navy with soft cyan/blue glows and a faint grid */
+.game-backdrop {
+  background:
+    radial-gradient(ellipse at 15% 10%, rgb(32 199 232 / 0.14), transparent 55%),
+    radial-gradient(ellipse at 85% 90%, rgb(38 140 255 / 0.16), transparent 55%),
+    linear-gradient(180deg, #081b33 0%, #061426 100%);
+}
+
+.game-grid {
+  background-image:
+    linear-gradient(rgb(145 167 195 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(145 167 195 / 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Guided-highlight: subtle cyan glow + pulse. Never blocks pointer events. */
+@keyframes guide-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(37 217 255 / 0.55), 0 0 14px rgb(37 217 255 / 0.35); }
+  50% { box-shadow: 0 0 0 6px rgb(37 217 255 / 0), 0 0 22px rgb(37 217 255 / 0.55); }
+}
+
+.guide-highlight {
+  outline: 2px solid var(--color-cyan-bright);
+  outline-offset: 2px;
+  animation: guide-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.45s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guide-highlight, .animate-fade-up { animation: none; }
+}
+
+/* Shared HUD surfaces for dispatcher panels */
+.panel {
+  @apply rounded-2xl border border-line bg-surface/90 shadow-[0_8px_24px_rgb(0_0_0/0.25)];
+}
+.panel-title {
+  @apply text-xs font-bold uppercase tracking-wider text-ink-dim;
+}
+.label-xs {
+  @apply text-[10px] font-semibold uppercase tracking-wider text-ink-dim;
 }
