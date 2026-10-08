@@ -5,7 +5,7 @@ import GameButton from "@/components/game/GameButton";
 import ProgressBar from "@/components/game/ProgressBar";
 
 // Mission progression: completed / current / pending, driven by the persisted mission run.
-export default function Phase3MissionPanel({ m, onComplete, onContinue }) {
+export default function Phase3MissionPanel({ m }) {
   const { mission, run, task } = m;
   const vars = getTaskVars();
   const total = mission.tasks.length;
@@ -14,7 +14,7 @@ export default function Phase3MissionPanel({ m, onComplete, onContinue }) {
   return (
     <aside aria-label="Mission tasks" className="panel flex flex-col p-3">
       <div className="flex items-center justify-between">
-        <h2 className="panel-title">Mission Tasks (Phase 3)</h2>
+        <h2 className="panel-title">Mission Tasks</h2>
         <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-bold tabular-nums text-ink">
           {done} / {total}
         </span>
@@ -57,20 +57,6 @@ export default function Phase3MissionPanel({ m, onComplete, onContinue }) {
         })}
       </ol>
 
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <GameButton variant="ghost" size="sm" onClick={m.requestHint} disabled={!run.started || !task}>
-          <Lightbulb className="size-3.5" aria-hidden="true" /> Hint
-        </GameButton>
-        {run.completed ? (
-          <GameButton size="sm" onClick={onContinue}>
-            Load Analysis
-          </GameButton>
-        ) : (
-          <GameButton size="sm" onClick={onComplete} disabled={!m.allTasksDone}>
-            Complete Mission
-          </GameButton>
-        )}
-      </div>
     </aside>
   );
 }

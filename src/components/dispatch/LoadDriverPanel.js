@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, X, Clock } from "lucide-react";
+import { Check, X, Clock, ChevronRight, Route, FileText } from "lucide-react";
 import { suitabilityChecks } from "@/data/dispatchComms";
 import { getRosterEntry, displayStatus } from "@/lib/dispatchRoster";
 import { getHosReview } from "@/lib/dispatchActions";
@@ -9,7 +9,6 @@ import GameButton from "@/components/game/GameButton";
 import TaskHighlight from "@/components/dispatcher/TaskHighlight";
 import TruckThumb from "@/components/dispatcher/TruckThumb";
 import BrokerAvatar from "@/components/brokers/BrokerAvatar";
-import DriverRoutePreview from "./DriverRoutePreview";
 
 function Fact({ label, children, sub, wide = false }) {
   return (
@@ -182,14 +181,134 @@ export function DriverDetails({ m, highlight }) {
   );
 }
 
-// Right column body: negotiated load, driver details and the route preview.
-export default function LoadDriverPanel({ m, highlight }) {
-  const entry = m.viewDriverId ? getRosterEntry(m.viewDriverId) : null;
+// Compact right column: negotiated load, the driver under review and the dispatch status. Full
+// details (load, suitability, dispatch sheet, route) open in drawers owned by the page (`onOpen`).
+const STATE_TONE = "flex items-center gap-1.5 text-xs font-bold text-success";
+
+export default function AssignmentSummary({ m, highlight, onOpen }) {
+  const { neg, d, run, vars } = m;
+  const viewed = m.viewDriverId ? getRosterEntry(m.viewDriverId) : null;
+  const selected = viewed && d.selectedDriverId === viewed.id;
+  const locked = d.dispatchSent && !selected;
+  const accepted = d.response === "accepted";
+  const entry = m.entry;
+  const drawerLink = "mt-2 flex w-full items-center justify-center gap-1 rounded-lg border border-line py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright";
+
   return (
     <div className="space-y-3">
-      <NegotiatedLoadCard m={m} highlight={highlight} />
-      <DriverDetails m={m} highlight={highlight} />
-      <DriverRoutePreview load={m.neg.load} entry={entry} />
+      <section aria-label="Negotiated load" className="panel p-3">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-sm font-extrabold text-ink">{vars.ref}</h2>
+          <span className="shrink-0 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-success">{m.statusLabel}</span>
+        </div>
+        <p className="mt-1 text-xs font-semibold text-ink">
+          {vars.origin} → {vars.destination}
+        </p>
+        <p className="mt-1 text-2xl font-extrabold tabular-nums leading-tight text-success">{formatCurrency(neg.agreedRate)}</p>
+        {d.loadReviewed ? (
+          <p className={`mt-2 ${STATE_TONE}`}>
+            <Check className="size-4" aria-hidden="true" /> LOAD REVIEWED
+          </p>
+        ) : (
+          <TaskHighlight active={highlight === "load-review"} className="mt-2">
+            <GameButton size="sm" className="w-full" disabled={!run.started} onClick={m.reviewLoad}>
+              Mark Load Reviewed
+            </GameButton>
+          </TaskHighlight>
+        )}
+        <button type="button" onClick={() => onOpen("load")} className={drawerLink}>
+          View Load Details <ChevronRight className="size-3.5" aria-hidden="true" />
+        </button>
+        <button type="button" onClick={() => onOpen("route")} className={drawerLink.replace("mt-2", "mt-1.5")}>
+          <Route className="size-3.5" aria-hidden="true" /> View Route
+        </button>
+      </section>
+
+      <section aria-label="Driver summary" className="panel p-3">
+        {viewed ? (
+          <>
+            <div className="flex items-center gap-2">
+              <BrokerAvatar broker={viewed.driver} className="size-9 text-xs" />
+              <div className="min-w-0 flex-1">
+                <h2 className="truncate text-sm font-extrabold text-ink">{viewed.driver.name}</h2>
+                <p className="truncate text-[11px] text-ink-dim">
+                  {viewed.truck.id} · {viewed.truck.equipment}
+                </p>
+              </div>
+            </div>
+            <p className="mt-1.5 text-[11px] text-ink-dim">
+              {viewed.driver.location} · HOS {formatDuration(viewed.driver.hosMinutes)}
+            </p>
+            {selected ? (
+              <p className={`mt-2 ${STATE_TONE}`}>
+                <Check className="size-4" aria-hidden="true" /> DRIVER SELECTED
+              </p>
+            ) : (
+              <GameButton size="sm" className="mt-2 w-full" disabled={!run.started || locked} onClick={() => m.selectDriver(viewed.id)}>
+                Select This Driver
+              </GameButton>
+            )}
+            <button type="button" onClick={() => onOpen("suitability")} className={drawerLink.replace("mt-2", "mt-1.5")}>
+              Review Suitability <ChevronRight className="size-3.5" aria-hidden="true" />
+            </button>
+          </>
+        ) : (
+          <>
+            <h2 className="panel-title">Driver</h2>
+            <p className="mt-1 text-xs text-ink-dim">{run.started ? "Pick a driver from the list." : "Start the mission to review drivers."}</p>
+          </>
+        )}
+      </section>
+
+      <section aria-label="Dispatch status" className={`panel p-3 ${accepted || d.assigned ? "border-success/50" : ""}`}>
+        {!entry ? (
+          <>
+            <h2 className="panel-title flex items-center gap-1.5">
+              <FileText className="size-3.5" aria-hidden="true" /> Dispatch
+            </h2>
+            <p className="mt-1 text-xs text-ink-dim">Select a driver to prepare the dispatch.</p>
+          </>
+        ) : (
+          <>
+            <p className={`text-[11px] font-bold uppercase tracking-wide ${d.dispatchSent || d.assigned ? "text-success" : "text-cyan-bright"}`}>
+              {d.assigned ? "✓ Assignment confirmed" : accepted ? "✓ Driver accepted" : d.dispatchSent ? "✓ Dispatch sent" : "Dispatch ready"}
+            </p>
+            <dl className="mt-1 space-y-0.5 text-xs">
+              <div className="flex justify-between gap-2">
+                <dt className="text-ink-dim">Load</dt>
+                <dd className="font-semibold text-ink">{vars.ref}</dd>
+              </div>
+              <div className="flex justify-between gap-2">
+                <dt className="text-ink-dim">Driver</dt>
+                <dd className="truncate font-semibold text-ink">{entry.driver.name}</dd>
+              </div>
+              <div className="flex justify-between gap-2">
+                <dt className="text-ink-dim">Pickup</dt>
+                <dd className="truncate font-semibold text-ink">{vars.origin}</dd>
+              </div>
+            </dl>
+            {d.response === "needs-clarification" && <p className="mt-1.5 text-[11px] text-gold-bright">The driver has a question. Answer it in the chat.</p>}
+            {d.response === "declined" && <p className="mt-1.5 text-[11px] text-danger">The driver declined. Choose another driver.</p>}
+            {d.assigned ? (
+              <p className={`mt-2 ${STATE_TONE}`}>
+                <Check className="size-4" aria-hidden="true" /> READY FOR PICKUP
+              </p>
+            ) : accepted ? (
+              <TaskHighlight active={highlight === "confirm-assignment"} className="mt-2">
+                <GameButton className="w-full uppercase" onClick={m.confirmAssignment}>
+                  Confirm Assignment
+                </GameButton>
+              </TaskHighlight>
+            ) : (
+              <TaskHighlight active={highlight === "dispatch"} className="mt-2">
+                <GameButton size="sm" variant={d.dispatchSent ? "ghost" : "primary"} className="w-full" disabled={!run.started} onClick={() => onOpen("dispatch")}>
+                  {d.dispatchSent ? "View Dispatch" : "Review Dispatch"}
+                </GameButton>
+              </TaskHighlight>
+            )}
+          </>
+        )}
+      </section>
     </div>
   );
 }

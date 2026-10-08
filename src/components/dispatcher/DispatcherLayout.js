@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Menu, X, Search } from "lucide-react";
 import { dispatcherNav } from "@/data/navigation";
 import { resolveNav } from "@/lib/access";
+import { features } from "@/data/features";
 import { useGameProgress } from "@/hooks/useGameProgress";
 import GameTopBar from "@/components/game/GameTopBar";
 import GameSidebar from "@/components/game/GameSidebar";
@@ -75,10 +76,12 @@ export default function DispatcherLayout({ activeId, highlightId = null, footer 
               >
                 <Menu className="size-4" aria-hidden="true" />
               </button>
-              <div className="hidden max-w-xl flex-1 items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm text-ink-dim sm:flex">
-                <Search className="size-4 shrink-0" aria-hidden="true" />
-                <span className="truncate">Search loads, brokers, trucks...</span>
-              </div>
+              {features.globalSearch && (
+                <div className="hidden max-w-xl flex-1 items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm text-ink-dim sm:flex">
+                  <Search className="size-4 shrink-0" aria-hidden="true" />
+                  <span className="truncate">Search loads, brokers, trucks...</span>
+                </div>
+              )}
             </div>
           }
         />

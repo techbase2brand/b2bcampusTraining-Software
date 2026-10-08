@@ -10,7 +10,8 @@ import { levels } from "@/data/levels";
 import { canAccessRoute } from "@/lib/access";
 import DispatcherLayout from "@/components/dispatcher/DispatcherLayout";
 import AccessGate from "@/components/game/AccessGate";
-import GameButton from "@/components/game/GameButton";
+import ResetProgress from "./ResetProgress";
+import { features } from "@/data/features";
 
 const ICONS = { "ai-assistant": Sparkles, reports: BarChart3, learning: GraduationCap, settings: Settings };
 
@@ -33,7 +34,7 @@ function Extras({ id, state, router, reset }) {
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat icon={Trophy} label="XP" value={state.xp} />
         <Stat icon={Star} label="Stars" value={state.stars} />
-        <Stat icon={Coins} label="Coins" value={state.coins} />
+        {features.coins && <Stat icon={Coins} label="Coins" value={state.coins} />}
         <Stat icon={CheckCircle2} label="Missions done" value={`${state.completedLevels.length} / ${missionRows.length}`} />
       </div>
     );
@@ -70,17 +71,12 @@ function Extras({ id, state, router, reset }) {
           <span className="label-xs mr-2">Avatar</span>
           {state.avatarSelection ?? "Not chosen"}
         </p>
-        <GameButton
-          variant="ghost"
-          size="sm"
-          className="mt-3"
-          onClick={() => {
+        <ResetProgress
+          onReset={() => {
             reset();
             router.replace("/login");
           }}
-        >
-          Log out &amp; reset progress (dev)
-        </GameButton>
+        />
       </div>
     );
   }

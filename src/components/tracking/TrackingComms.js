@@ -1,21 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Phone, PhoneOff, Mic, MicOff, Grid3x3, Volume2, NotebookPen, Send, MessageSquare, Lock, ChevronUp } from "lucide-react";
+import { Phone, NotebookPen, Send, MessageSquare, Lock, ChevronUp } from "lucide-react";
 import { callScript } from "@/data/brokerComms";
 import { formatTimer } from "@/lib/callSim";
 import GameButton from "@/components/game/GameButton";
+import CallControls from "@/components/game/CallControls";
+import { features } from "@/data/features";
 import TaskHighlight from "@/components/dispatcher/TaskHighlight";
 import BrokerAvatar from "@/components/brokers/BrokerAvatar";
 
 const VISIBLE_CHIPS = 3;
 const BARS = 14;
-const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
 const MODES = [
   { id: "chat", label: "Chat" },
   { id: "call", label: "Call" },
-  { id: "ai", label: "AI Call" },
-];
+  { id: "ai", label: "AI Call", feature: "aiCall" },
+].filter((x) => !x.feature || features[x.feature]);
 
 // Driver communication during the trip: chat, a simulated call (no telephony) and an AI-call
 // placeholder. Check-call questions are one tap away; each check call is logged by the engine.
@@ -69,7 +70,7 @@ export default function TrackingComms({ m }) {
               {entry.truck.id} · Check calls: <span className="font-semibold text-cyan-bright">{t.checkCalls.length}</span>
             </p>
           </div>
-          <div role="tablist" aria-label="Communication mode" className="grid grid-cols-3 gap-0.5 rounded-lg bg-navy-900 p-0.5 text-[11px] font-semibold">
+          <div role="tablist" aria-label="Communication mode" className={`grid ${MODES.length === 3 ? "grid-cols-3" : "grid-cols-2"} gap-0.5 rounded-lg bg-navy-900 p-0.5 text-xs font-semibold`}>
             {MODES.map((x) => (
               <button key={x.id} type="button" role="tab" aria-selected={mode === x.id} onClick={() => setMode(x.id)} className={`rounded-md px-2 py-1 ${mode === x.id ? "bg-blue text-white" : "text-ink-dim hover:text-ink"}`}>
                 {x.label}
@@ -150,7 +151,7 @@ export default function TrackingComms({ m }) {
               <p className={`text-xs font-bold ${connected ? "text-success" : dialing ? "text-gold-bright" : ended ? "text-danger" : "text-ink-dim"}`} aria-live="polite">
                 {ended ? "Call Ended" : live ? callScript.statusLabels[call.status] : "Ready"}
               </p>
-              {live && (
+              {features.callExtras && live && (
                 <div className="mt-1.5 flex h-7 items-center justify-center gap-1" aria-hidden="true">
                   {Array.from({ length: BARS }, (_, i) => (
                     <span key={i} className={`w-1 rounded-full bg-cyan-bright ${connected && !call.muted ? "animate-pulse" : "opacity-30"}`} style={{ height: `${connected && !call.muted ? 30 + ((i * 37) % 70) : 20}%`, animationDelay: `${i * 90}ms` }} />
@@ -167,29 +168,7 @@ export default function TrackingComms({ m }) {
 
             {live ? (
               <>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {[
-                    ["mute", call.muted ? MicOff : Mic, "Mute", call.muted],
-                    ["keypad", Grid3x3, "Keypad", call.keypad],
-                    ["speaker", Volume2, "Speaker", call.speaker],
-                  ].map(([type, Icon, label, on]) => (
-                    <button key={type} type="button" onClick={() => m.toggleCall(type)} disabled={!connected} aria-pressed={on} className={`flex flex-col items-center gap-0.5 rounded-lg border py-1.5 text-[10px] font-semibold transition-colors disabled:opacity-40 ${on ? "border-cyan bg-cyan/15 text-cyan-bright" : "border-line bg-surface-2 text-ink"}`}>
-                      <Icon className="size-4" aria-hidden="true" /> {label}
-                    </button>
-                  ))}
-                  <button type="button" onClick={m.endCall} className="flex flex-col items-center gap-0.5 rounded-lg border border-danger/50 bg-danger/20 py-1.5 text-[10px] font-semibold text-danger transition-colors hover:bg-danger/30">
-                    <PhoneOff className="size-4" aria-hidden="true" /> End Call
-                  </button>
-                </div>
-                {call.keypad && (
-                  <div className="grid grid-cols-3 gap-1" aria-label="Keypad">
-                    {KEYS.map((k) => (
-                      <span key={k} className="rounded-md bg-surface-2 py-1 text-center text-xs font-semibold text-ink">
-                        {k}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                <CallControls call={call} connected={connected} onToggle={m.toggleCall} onEnd={m.endCall} />
               </>
             ) : (
               <GameButton size="sm" disabled={!canTalk} onClick={m.startCall}>

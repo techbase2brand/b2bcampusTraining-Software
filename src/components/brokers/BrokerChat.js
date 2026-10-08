@@ -1,22 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Phone, MoreHorizontal, Send, Star, MessageSquare, Lock, ChevronUp, ArrowRight } from "lucide-react";
+import { Send, Star, MessageSquare, Lock, ChevronUp, ArrowRight } from "lucide-react";
 import { brokers } from "@/data/brokers";
 import { simulationConfig } from "@/data/simulationConfig";
 import { formatLocation } from "@/lib/loadSelectors";
 import { addMinutes, formatSimClock, parseSimTime } from "@/lib/text";
 import GameButton from "@/components/game/GameButton";
+import { orderChips, chipClass, chipLabel } from "@/lib/chipOrder";
 import TaskHighlight from "@/components/dispatcher/TaskHighlight";
 import TrainingFeedback from "@/components/training/TrainingFeedback";
 import BrokerAvatar, { STATUS_STYLE } from "./BrokerAvatar";
+import CallPanel from "./CallPanel";
 
 const CLOCK_START = parseSimTime(simulationConfig.clock.now);
 const VISIBLE_CHIPS = 4;
 
-// Chat with the broker for the selected load: the central working area. Free text is mapped to
+// Chat / Call workspace for the selected load: the central working area (one view at a time). Free text is mapped to
 // training topics by the engine (lib/brokerChat.js); the broker's answers are deterministic.
-export default function BrokerChat({ m, draft, setDraft, highlight, onCall }) {
+export default function BrokerChat({ m, draft, setDraft, highlight, mode, setMode }) {
   const [popover, setPopover] = useState(false);
   const endRef = useRef(null);
   const broker = brokers.find((b) => b.id === m.viewBrokerId) ?? null;
@@ -62,7 +64,7 @@ export default function BrokerChat({ m, draft, setDraft, highlight, onCall }) {
   }
 
   const st = STATUS_STYLE[broker.status];
-  const chips = m.helper?.questions ?? [];
+  const chips = orderChips(m.helper?.questions ?? [], m.checklist, m.comms.coveredTopics);
   const shown = chips.slice(0, VISIBLE_CHIPS);
   const rest = chips.slice(VISIBLE_CHIPS);
 
@@ -82,18 +84,16 @@ export default function BrokerChat({ m, draft, setDraft, highlight, onCall }) {
             </span>
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onCall}
-          disabled={!canChat}
-          aria-label={`Call ${broker.name}`}
-          className="grid size-8 place-items-center rounded-lg border border-success/40 bg-success/15 text-success transition-colors hover:bg-success/25 disabled:opacity-40"
-        >
-          <Phone className="size-4" aria-hidden="true" />
-        </button>
-        <button type="button" aria-label="More options" className="grid size-8 place-items-center rounded-lg border border-line bg-surface text-ink-dim">
-          <MoreHorizontal className="size-4" aria-hidden="true" />
-        </button>
+        <div role="tablist" aria-label="Communication mode" className="grid grid-cols-2 gap-0.5 rounded-lg bg-navy-900 p-0.5 text-xs font-semibold">
+          {[
+            ["chat", "Chat"],
+            ["call", "Call"],
+          ].map(([id, label]) => (
+            <button key={id} type="button" role="tab" aria-selected={mode === id} disabled={!canChat && id === "call"} onClick={() => setMode(id)} className={`rounded-md px-3 py-1 disabled:opacity-40 ${mode === id ? "bg-blue text-white" : "text-ink-dim hover:text-ink"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
       </header>
 
       {!canChat && (
@@ -103,6 +103,12 @@ export default function BrokerChat({ m, draft, setDraft, highlight, onCall }) {
         </div>
       )}
 
+      {mode === "call" && canChat ? (
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <CallPanel m={m} embedded />
+        </div>
+      ) : (
+        <>
       <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-3 py-3" role="log" aria-live="polite" aria-label="Conversation">
         {messages.map((msg, i) => {
           const mine = msg.from === "student";
@@ -139,9 +145,9 @@ export default function BrokerChat({ m, draft, setDraft, highlight, onCall }) {
                 type="button"
                 disabled={!canChat}
                 onClick={() => m.send(q.text, "chat")}
-                className="rounded-full border border-line bg-navy-900 px-2 py-0.5 text-[10px] text-ink transition-colors hover:border-cyan hover:text-cyan-bright disabled:opacity-40"
+                className={chipClass(q)}
               >
-                {q.label}
+                {chipLabel(q)}
               </button>
             ))}
             {rest.length > 0 && (
@@ -168,7 +174,7 @@ export default function BrokerChat({ m, draft, setDraft, highlight, onCall }) {
                       }}
                       className="w-full rounded-lg px-2 py-1.5 text-left text-xs text-ink transition-colors hover:bg-blue/20 disabled:opacity-40"
                     >
-                      {q.label}
+                      {chipLabel(q)}
                     </button>
                   </li>
                 ))}
@@ -189,13 +195,15 @@ export default function BrokerChat({ m, draft, setDraft, highlight, onCall }) {
               type="submit"
               disabled={!canChat || !draft.trim()}
               aria-label="Send message"
-              className="grid size-9 place-items-center rounded-lg bg-blue text-white transition hover:brightness-110 disabled:opacity-40"
+              className="flex h-9 items-center gap-1.5 rounded-lg bg-linear-to-r from-blue to-[#1f7bff] px-3 text-xs font-bold uppercase tracking-wide text-white transition hover:brightness-110 disabled:opacity-40"
             >
-              <Send className="size-4" aria-hidden="true" />
+              <Send className="size-4" aria-hidden="true" /> <span className="hidden sm:inline">Send</span>
             </button>
           </form>
         </div>
       </TaskHighlight>
+        </>
+      )}
     </section>
   );
 }

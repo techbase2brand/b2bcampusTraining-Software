@@ -7,109 +7,47 @@
 // in by load id and counted automatically, with no change to the Dashboard.
 
 import { statusCategories, attentionHealth, statusTones, healthTones, dashboardCopy, quickActions } from "@/data/dashboardStatus";
-import { assignmentStatuses } from "@/data/dispatchComms";
-import { trackingStatuses } from "@/data/phase7Missions";
 import { dispatcherNav } from "@/data/navigation";
 import { levels } from "@/data/levels";
 import { missions } from "@/data/missions";
-import { getLoad, getBroker, formatLocation } from "./loadSelectors";
+import { getLoad } from "./loadSelectors";
 import { getRosterEntry } from "./dispatchRoster";
-import { readDispatch, getAssignmentStatus } from "./dispatchActions";
+import { readDispatch } from "./dispatchActions";
+import { getDispatches, projectDispatchState } from "./dispatchRecords";
+import { describeDispatch, getStatusLabel, getStatusCategory } from "./dispatchView";
 import { readTracking, getTimelineAlerts } from "./trackingActions";
 import { fmtDateTime } from "./trackingComms";
 import { resolveNav, effectiveLevel } from "./access";
 import { formatCurrency } from "./text";
 
-const STATUS_LABELS = { ...assignmentStatuses, ...trackingStatuses };
-export const getStatusLabel = (id) => STATUS_LABELS[id] ?? String(id).toUpperCase();
+export { getStatusLabel, getStatusCategory as getDispatchStatusCategory };
 
-// "pending" | "active" | "completed" for a canonical status id (null if unknown).
-export function getDispatchStatusCategory(statusId) {
-  return Object.keys(statusCategories).find((cat) => statusCategories[cat].includes(statusId)) ?? null;
-}
-
-const cityOf = (locationId) => formatLocation(locationId).split(",")[0];
-
-// The live training dispatch as a record, or null when no load has entered dispatch yet.
-function currentRecord(state) {
-  const loadId = state.assignedLoadId ?? state.negotiatedLoadId ?? null;
-  const load = loadId ? getLoad(loadId) : null;
-  if (!load) return null;
-
-  const tracking = state.assignedLoadId ? readTracking(state) : null;
+// One display record per dispatch (all of them: draft, pending, active and completed), built from
+// the dispatch's own saved state. Nothing is shared between dispatches.
+function buildRecord(state, dispatch) {
+  const base = describeDispatch(dispatch);
+  const proj = projectDispatchState(state, dispatch);
+  const tracking = dispatch.ops.assignedLoadId ? readTracking(proj) : null;
   const trackerOn = Boolean(tracking?.ok);
-  const dispatch = readDispatch(state);
-  const statusId = trackerOn ? tracking.snap.statusId : getAssignmentStatus(dispatch.d);
-  const entry = trackerOn ? tracking.entry : dispatch.entry ?? null;
   const started = trackerOn && tracking.run.started;
   const snap = trackerOn ? tracking.snap : null;
   const lastCheck = started ? tracking.t.checkCalls.at(-1) ?? null : null;
-
   return {
-    loadId: load.id,
-    reference: load.referenceNumber,
-    statusId,
-    statusLabel: getStatusLabel(statusId),
-    category: getDispatchStatusCategory(statusId),
-    driverId: entry?.driver.id ?? null,
-    driverName: entry?.driver.name ?? null,
-    truckId: entry?.truck.id ?? null,
-    brokerName: getBroker(load.brokerId)?.name ?? null,
-    origin: formatLocation(load.originLocationId),
-    destination: formatLocation(load.destinationLocationId),
-    route: `${cityOf(load.originLocationId)} → ${cityOf(load.destinationLocationId)}`,
-    agreedRate: state.agreedRate ?? load.rate,
-    postedRate: load.rate,
+    ...base,
+    agreedRate: base.agreedRate ?? null,
     eta: snap ? fmtDateTime(snap.etaDelivery) : null,
     location: snap ? snap.location : null,
     milesRemaining: snap ? snap.remainingMiles : null,
     health: snap ? snap.health : null,
     trackingStarted: started,
     lastCheckCall: lastCheck ? { time: fmtDateTime(new Date(lastCheck.timestamp)), location: lastCheck.location } : null,
-    live: true,
+    live: !base.completed,
   };
 }
 
-// Archived dispatches (future): minimal records saved by later phases, keyed by load id.
-function archivedRecords(state) {
-  return (Array.isArray(state.dispatchRecords) ? state.dispatchRecords : [])
-    .filter((r) => r && getLoad(r.loadId))
-    .map((r) => {
-      const load = getLoad(r.loadId);
-      const entry = r.driverId ? getRosterEntry(r.driverId) : null;
-      return {
-        loadId: load.id,
-        reference: load.referenceNumber,
-        statusId: r.statusId,
-        statusLabel: getStatusLabel(r.statusId),
-        category: getDispatchStatusCategory(r.statusId),
-        driverId: entry?.driver.id ?? null,
-        driverName: entry?.driver.name ?? null,
-        truckId: entry?.truck.id ?? null,
-        brokerName: getBroker(load.brokerId)?.name ?? null,
-        origin: formatLocation(load.originLocationId),
-        destination: formatLocation(load.destinationLocationId),
-        route: `${cityOf(load.originLocationId)} → ${cityOf(load.destinationLocationId)}`,
-        agreedRate: r.agreedRate ?? load.rate,
-        postedRate: load.rate,
-        eta: null,
-        location: null,
-        milesRemaining: null,
-        health: null,
-        trackingStarted: false,
-        lastCheckCall: null,
-        live: false,
-      };
-    });
-}
-
-// One record per unique load id (the live dispatch wins over an archived copy of the same load).
+// Every dispatch record, newest first.
 export function getDispatchRecords(state) {
-  const byLoad = new Map();
-  for (const r of archivedRecords(state)) byLoad.set(r.loadId, r);
-  const live = currentRecord(state);
-  if (live) byLoad.set(live.loadId, live);
-  return [...byLoad.values()];
+  return [...getDispatches(state)].sort((a, b) => b.sequenceNumber - a.sequenceNumber).map((d) => buildRecord(state, d));
 }
 
 const inCategory = (records, cat) => records.filter((r) => r.category === cat);
@@ -157,38 +95,45 @@ export function getTrackingSummary(records) {
   return { reference: r.reference, location: r.location, milesRemaining: r.milesRemaining, eta: r.eta, health: r.health, lastCheckCall: r.lastCheckCall };
 }
 
-// What needs the dispatcher's attention right now, derived from dispatch and tracker state.
+// What needs the dispatcher's attention right now, across ALL unfinished dispatches. Each item
+// carries the dispatch's own resume route.
 export function getAttentionItems(state, records) {
   const items = [];
-  const live = records.find((r) => r.live);
-  if (!live) return items;
-  const ref = live.reference;
-  if (live.category === "pending") {
-    const d = readDispatch(state).d;
-    const text = {
-      negotiated: `${ref} is negotiated. Select a driver.`,
-      "ready-for-assignment": `${ref} has a driver selected. Send the dispatch.`,
-      assigned: d.response === "needs-clarification" ? `Driver needs clarification on ${ref}.` : `Driver confirmation pending for ${ref}.`,
-      "driver-confirmed": `${ref}: driver accepted. Confirm the assignment.`,
-    }[live.statusId];
-    if (text) items.push({ id: `pending-${live.statusId}`, tone: d.response === "needs-clarification" ? "amber" : "blue", text, navId: "dispatch" });
-  }
-  if (live.category === "active") {
-    const c = readTracking(state);
-    if (c.ok && !c.run.started) items.push({ id: "tracking-not-started", tone: "cyan", text: `${ref} is ready for pickup. Start tracking.`, navId: "tracking" });
-    if (c.ok && c.run.started) {
-      for (const a of getTimelineAlerts(c)) {
-        if (a.tone === "info") continue;
-        items.push({ id: a.id, tone: a.tone === "danger" ? "red" : "amber", text: `${a.title}: ${a.text}`, navId: "tracking" });
+  for (const r of records.filter((x) => x.live)) {
+    const dispatch = getDispatches(state).find((d) => d.slug === r.slug);
+    const proj = projectDispatchState(state, dispatch);
+    const label = `${r.label}${r.reference ? ` (${r.reference})` : ""}`;
+    const add = (id, tone, text) => items.push({ id: `${r.slug}-${id}`, tone, text, navId: null, route: r.resumeRoute });
+
+    if (r.category === "draft") {
+      add(r.stage, "cyan", r.stage === "BROKER_COMMUNICATION" ? `${label}: continue with the broker.` : `${label}: compare the shortlist and choose a load.`);
+    } else if (r.category === "pending") {
+      const d = readDispatch(proj).d;
+      const text = {
+        negotiated: `${label} is negotiated. Select a driver.`,
+        "ready-for-assignment": `${label} has a driver selected. Send the dispatch.`,
+        assigned: d.response === "needs-clarification" ? `Driver needs clarification on ${label}.` : `Driver confirmation pending for ${label}.`,
+        "driver-confirmed": `${label}: driver accepted. Confirm the assignment.`,
+      }[r.statusId];
+      if (text) add(`pending-${r.statusId}`, d.response === "needs-clarification" ? "amber" : "blue", text);
+    } else if (r.category === "active") {
+      const c = readTracking(proj);
+      if (c.ok && !c.run.started) add("tracking-not-started", "cyan", `${label} is ready for pickup. Start tracking.`);
+      if (c.ok && c.run.started) {
+        for (const a of getTimelineAlerts(c)) {
+          if (a.tone === "info") continue;
+          items.push({ id: `${r.slug}-${a.id}`, tone: a.tone === "danger" ? "red" : "amber", text: `${label}: ${a.title}. ${a.text}`, navId: null, route: r.resumeRoute });
+        }
       }
     }
   }
   return items;
 }
 
-// Operational events in order (oldest first), from persisted state only. Once the tracker has started
-// its activity log already holds the assignment events, so those are not repeated from flags.
-function operationalEvents(state) {
+// Operational events of ONE dispatch in order (oldest first), from its persisted state only. Once the
+// tracker has started its activity log already holds the assignment events, so those are not
+// repeated from flags.
+export function operationalEvents(state) {
   const events = [];
   const neg = state.negotiatedLoadId ? getLoad(state.negotiatedLoadId) : null;
   const picked = state.selectedBestLoadId ? getLoad(state.selectedBestLoadId) : null;
@@ -209,9 +154,12 @@ function operationalEvents(state) {
   return events;
 }
 
-export function getRecentOperationalActivity(state, limit = 8) {
+// Activity of one dispatch (newest first). Used by the dispatch detail page.
+export function getDispatchActivity(state, dispatch, limit = 50) {
+  const proj = projectDispatchState(state, dispatch);
+  const created = { id: "created", type: "created", timestamp: null, message: `Dispatch created with ${dispatch.ops.shortlistedLoadIds.length} shortlisted loads` };
   const seen = new Set();
-  return operationalEvents(state)
+  return [created, ...operationalEvents(proj)]
     .filter((e) => {
       const key = `${e.type}|${e.message}|${e.timestamp}`;
       return seen.has(key) ? false : seen.add(key);
@@ -219,6 +167,17 @@ export function getRecentOperationalActivity(state, limit = 8) {
     .map((e) => ({ ...e, time: e.timestamp ? fmtDateTime(new Date(e.timestamp)) : null }))
     .reverse()
     .slice(0, limit);
+}
+
+// Recent activity across all dispatches: dispatches by most recent update, newest event first
+// within each, every line tagged with its dispatch.
+export function getRecentOperationalActivity(state, limit = 8) {
+  const out = [];
+  for (const d of [...getDispatches(state)].sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""))) {
+    const tag = describeDispatch(d).label;
+    for (const e of getDispatchActivity(state, d)) out.push({ ...e, id: `${d.slug}-${e.id}`, message: `${tag} — ${e.message}`, dispatchSlug: d.slug });
+  }
+  return out.slice(0, limit);
 }
 
 export function getTrainingProgress(state) {
@@ -253,6 +212,7 @@ export function getDashboard(state) {
     tracking: getTrackingSummary(records),
     attention: getAttentionItems(state, records),
     activity: getRecentOperationalActivity(state),
+    dispatches: getDispatches(state).length,
     progress: getTrainingProgress(state),
     actions: getQuickActions(state),
     pending: getPendingDispatches(records),

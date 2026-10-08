@@ -114,9 +114,9 @@ export function LoadDriverStatus({ m }) {
 export function ActivityLog({ m }) {
   const rows = [...m.t.activity].reverse();
   return (
-    <section aria-label="Activity log" className="panel flex max-h-72 flex-col p-3">
+    <section aria-label="Activity log" className="panel p-3">
       <h2 className="text-sm font-extrabold text-ink">Activity Log</h2>
-      <ul className="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
+      <ul className="mt-2 space-y-1.5">
         {rows.map((a) => (
           <li key={a.id} className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2 text-[11px] leading-snug">
             <span className="tabular-nums text-ink-dim">{m.fmt(new Date(a.timestamp))}</span>
@@ -132,12 +132,12 @@ export function ActivityLog({ m }) {
 export function CheckCallLog({ m }) {
   const rows = [...m.t.checkCalls].reverse();
   return (
-    <section aria-label="Check call log" className="panel flex max-h-72 flex-col p-3">
+    <section aria-label="Check call log" className="panel p-3">
       <h2 className="flex items-center justify-between text-sm font-extrabold text-ink">
         Check Calls
         <span className="rounded-full bg-cyan/15 px-2 py-0.5 text-[10px] font-bold text-cyan-bright">{rows.length}</span>
       </h2>
-      <ul className="mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
+      <ul className="mt-2 space-y-1.5">
         {rows.map((c) => (
           <li key={c.id} className="rounded-lg border border-line/60 bg-navy-900/50 px-2.5 py-1.5 text-[11px] leading-snug">
             <p className="font-semibold text-ink">
@@ -160,14 +160,14 @@ export function CheckCallLog({ m }) {
 export function TaskList({ m }) {
   const { mission, run } = m;
   return (
-    <section aria-label="Mission tasks" className="panel flex max-h-72 flex-col p-3">
+    <section aria-label="Mission tasks" className="panel p-3">
       <h2 className="flex items-center justify-between text-sm font-extrabold text-ink">
         Mission Tasks
         <span className="text-[10px] font-semibold text-ink-dim">
           {run.completedTasks.length} / {mission.tasks.length}
         </span>
       </h2>
-      <ol className="mt-2 min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
+      <ol className="mt-2 space-y-1">
         {mission.tasks.map((task, i) => {
           const done = run.completedTasks.includes(task.id);
           const current = run.started && !run.completed && i === run.currentTask;

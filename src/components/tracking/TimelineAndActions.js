@@ -176,22 +176,3 @@ export function ExceptionPanel({ m }) {
     </section>
   );
 }
-
-// Arrival: the last action of the mission. Delivery paperwork is the next phase.
-export function ArrivalCard({ m }) {
-  const { t, tl, run, highlight } = m;
-  if (t.step < tl.lastStep) return null;
-  return (
-    <section aria-label="Arrival at delivery" className="panel border-success/40 p-3">
-      <h2 className="text-sm font-extrabold text-ink">Arrived at Delivery</h2>
-      <p className="mt-1 text-xs text-ink-dim">{t.arrival ? "Arrival confirmed. Delivery paperwork comes in the next phase." : "The driver is at the receiver. Confirm the arrival to finish monitoring."}</p>
-      {!t.arrival && (
-        <TaskHighlight active={highlight === "confirm-arrival"} className="mt-2">
-          <GameButton size="sm" className="w-full" disabled={!run.started} onClick={m.confirmArrival}>
-            Confirm Arrival
-          </GameButton>
-        </TaskHighlight>
-      )}
-    </section>
-  );
-}

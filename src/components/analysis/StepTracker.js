@@ -5,7 +5,7 @@ import { mission03 } from "@/data/phase4Missions";
 export default function StepTracker({ index, completed }) {
   const steps = mission03.steps;
   return (
-    <ol aria-label="Phase 4 progress" className="flex items-start">
+    <ol aria-label="Mission 3 progress" className="flex items-start">
       {steps.map((label, i) => {
         const done = completed ? i <= 3 : i < index;
         const current = !completed && i === index;

@@ -7,13 +7,14 @@ import GameButton from "@/components/game/GameButton";
 import LoadDetailPanel from "@/components/loadboard/LoadDetailPanel";
 import TaskHighlight from "@/components/dispatcher/TaskHighlight";
 
-// Load details for the card under review, with the "Select as Best Load" action.
-// Selecting is only possible on the final task, so the earlier analysis cannot be skipped.
+// Load details for the card under review, with the "Choose This Load" action.
+// Choosing a candidate opens once the earlier analysis tasks are done, and stays open for practice:
+// the choice can be changed until a deal is locked in.
 export default function SelectedLoadPanel({ m, highlight, onSelect, onShowMap }) {
   const load = m.detailLoadId ? getLoad(m.detailLoadId) : null;
   if (!load) return null;
 
-  const canSelect = m.run.started && !m.run.completed && m.task?.rule?.type === "select-best" && !m.accepted;
+  const canSelect = m.practiceReady;
   const isBest = m.selectedBestLoadId === load.id;
 
   return (
@@ -29,8 +30,8 @@ export default function SelectedLoadPanel({ m, highlight, onSelect, onShowMap })
               <MapIcon className="size-4" aria-hidden="true" /> Map
             </GameButton>
           </div>
-          {!canSelect && !m.accepted && !m.run.completed && (
-            <p className="mt-2 text-[11px] text-ink-dim">Finish the analysis tasks first. Selecting the best load is the last step.</p>
+          {!canSelect && (
+            <p className="mt-2 text-[11px] text-ink-dim">{m.finalized ? "A deal is already locked in for this dispatch." : "Finish the analysis tasks first. Choosing a load is the last step."}</p>
           )}
         </div>
       </TaskHighlight>

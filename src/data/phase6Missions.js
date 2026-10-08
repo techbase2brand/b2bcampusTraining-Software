@@ -121,19 +121,14 @@ export const mission05 = {
 };
 
 export const phase6Page = {
-  eyebrow: "Phase 6",
+  eyebrow: "Mission 5",
   title: "Driver Communication + Load Assignment",
   subtitle: "Confirm the right driver, communicate the load details and complete the dispatch assignment.",
   driversTitle: "Drivers",
   panelTabs: [
     { id: "drivers", label: "Drivers" },
-    { id: "comms", label: "Comms" },
-    { id: "dispatch", label: "Dispatch" },
-    { id: "details", label: "Details" },
-  ],
-  secondaryTabs: [
-    { id: "dispatch", label: "Dispatch Sheet" },
-    { id: "details", label: "Load & Driver" },
+    { id: "comms", label: "Chat / Call" },
+    { id: "assign", label: "Assignment" },
   ],
   workflow: [
     { id: "load", title: "Review Load" },
@@ -146,7 +141,7 @@ export const phase6Page = {
     title: "DRIVER ASSIGNMENT COMPLETE",
     subtitle: "The driver accepted and the load is ready for pickup.",
     unlocked: "Status: READY FOR PICKUP. Live tracking comes in the next phase.",
-    cta: "Return to Level Map",
+    cta: "Continue to Tracking",
     secondary: "Back to Dispatch",
   },
 };

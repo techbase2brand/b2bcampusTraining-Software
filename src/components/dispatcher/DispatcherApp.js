@@ -12,6 +12,7 @@ import ProgressBar from "@/components/game/ProgressBar";
 import GameSidebar from "@/components/game/GameSidebar";
 import { dispatcherNav } from "@/data/navigation";
 import { resolveNav } from "@/lib/access";
+import { features } from "@/data/features";
 import MissionIntro from "@/components/training/MissionIntro";
 import MissionComplete from "@/components/training/MissionComplete";
 import DispatcherDashboard from "./DispatcherDashboard";
@@ -99,13 +100,12 @@ function DispatcherWorkspace() {
     </div>
   );
 
-  const search = (
+  const search = features.globalSearch ? (
     <div className="hidden max-w-xl items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm text-ink-dim sm:flex">
       <Search className="size-4 shrink-0" aria-hidden="true" />
       <span className="truncate">Search loads, trucks, drivers... (Ctrl + K)</span>
-      <span className="ml-auto shrink-0 text-[10px] uppercase text-gold">Later</span>
     </div>
-  );
+  ) : null;
 
   return (
     <div className="game-backdrop flex min-h-screen">
@@ -154,7 +154,7 @@ function DispatcherWorkspace() {
         <div className="flex flex-1">
           <main className="game-grid min-w-0 flex-1 p-4 sm:p-6">
             {view.section === "dashboard" && (
-              <DispatcherDashboard m={m} onContinue={continueMission} onNavigate={navigate} onOpenTruck={openTruck} />
+              <DispatcherDashboard m={m} onContinue={continueMission} onNavigate={navigate} onOpenRoute={(route) => router.push(route)} onOpenTruck={openTruck} />
             )}
             {view.section === "trucks" && !view.truckId && (
               <TruckList onSelect={(truckId) => setView({ section: "trucks", truckId, driverId: null })} />

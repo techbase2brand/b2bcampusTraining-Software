@@ -1,19 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
 import { useRequireAccess } from "@/hooks/useRequireAccess";
 import { usePhase4Mission } from "@/hooks/usePhase4Mission";
 import { mission03, phase4Page } from "@/data/phase4Missions";
-import { simulationConfig } from "@/data/simulationConfig";
-import { listCompatibleLoadIds } from "@/lib/loadRules";
+import { getDispatchBySlug, ROUTES } from "@/lib/dispatchRecords";
 import { hasReachedLevel } from "@/lib/access";
 import DispatcherLayout from "@/components/dispatcher/DispatcherLayout";
 import GameButton from "@/components/game/GameButton";
 import GameImage from "@/components/game/GameImage";
 import PhaseProgressCard from "@/components/loadboard/PhaseProgressCard";
 import PhaseComplete from "@/components/training/PhaseComplete";
+import { getCompletionStats } from "@/lib/completionStats";
 import StepTracker from "./StepTracker";
 import AssignedTruckPanel from "./AssignedTruckPanel";
 import ShortlistedLoadCards from "./ShortlistedLoadCards";
@@ -23,6 +23,9 @@ import SelectedLoadPanel from "./SelectedLoadPanel";
 import DecisionReasonPanel from "./DecisionReasonPanel";
 import BestLoadConfirmation from "./BestLoadConfirmation";
 import FlowStrip from "./FlowStrip";
+import PracticeSummary from "@/components/practice/PracticeSummary";
+import DispatchBar from "@/components/dispatches/DispatchBar";
+import DispatchNotFound from "@/components/dispatches/DispatchNotFound";
 
 const LEVEL_ID = mission03.levelId;
 
@@ -41,39 +44,25 @@ function Gate({ title, text, action, onAction }) {
   );
 }
 
-// Access gate: Level 3 must be unlocked and the Phase 3 shortlist present.
-// `?preview=1` (development only) shows the page with a demo shortlist that is not saved.
+// Access gate: Level 3 must be unlocked. The dispatch (and its shortlist) comes from the slug.
 export default function LoadAnalysisPage() {
   const router = useRouter();
-  const params = useSearchParams();
+  const { dispatchSlug } = useParams();
   const { state, allowed } = useRequireAccess();
 
   if (!allowed) return <main className="game-backdrop min-h-screen" />;
 
-  const preview = params.get("preview") === "1";
-  const unlocked = hasReachedLevel(state, LEVEL_ID);
-  const shortlist = state.shortlistedLoadIds ?? [];
-
-  if (!preview && !unlocked) {
-    return <Gate title="Load Analysis is locked" text="Complete Finding Loads (Phase 3) to unlock this mission." action="Back to Level Map" onAction={() => router.push("/home")} />;
+  const record = getDispatchBySlug(state, dispatchSlug);
+  if (!record) return <DispatchNotFound slug={dispatchSlug} />;
+  if (!hasReachedLevel(state, LEVEL_ID)) {
+    return <Gate title="Load Analysis is locked" text="Complete Finding Loads (Mission 2) to unlock this mission." action="Back to Level Map" onAction={() => router.push("/home")} />;
   }
-  if (!preview && shortlist.length < simulationConfig.shortlist.min) {
-    return (
-      <Gate
-        title="Shortlist your loads first"
-        text={`Load Analysis compares the loads you shortlisted in Phase 3. You need at least ${simulationConfig.shortlist.min}.`}
-        action="Back to the Load Board"
-        onAction={() => router.push("/dispatcher/load-board")}
-      />
-    );
-  }
-
-  return <LoadAnalysis avatar={state.avatarSelection ?? "male"} previewIds={preview && shortlist.length < simulationConfig.shortlist.min ? listCompatibleLoadIds().slice(0, 3) : null} />;
+  return <LoadAnalysis slug={dispatchSlug} />;
 }
 
-function LoadAnalysis({ avatar, previewIds }) {
+function LoadAnalysis({ slug }) {
   const router = useRouter();
-  const m = usePhase4Mission(previewIds);
+  const m = usePhase4Mission(slug);
   const [tab, setTab] = useState("comparison");
   const [confirmId, setConfirmId] = useState(null);
   const [showComplete, setShowComplete] = useState(false);
@@ -85,13 +74,16 @@ function LoadAnalysis({ avatar, previewIds }) {
     m.complete();
     setShowComplete(true);
   };
+  // Once the mission is complete, "continue" just goes on to the broker for the current candidate.
+  const proceed = run.completed ? () => router.push(ROUTES.brokers(slug)) : finish;
 
   return (
     <DispatcherLayout
       activeId="load-board"
-      footer={<PhaseProgressCard pct={pct} phaseLabel="Phase 4 Progress" levelLabel={`Level ${LEVEL_ID}`} title={mission03.title} />}
+      footer={<PhaseProgressCard pct={pct} phaseLabel="Mission 3 Progress" levelLabel={`Level ${LEVEL_ID}`} title={mission03.title} />}
     >
       <div className="mx-auto max-w-[110rem] space-y-4">
+        <DispatchBar slug={slug} />
         <section className="relative overflow-hidden rounded-2xl border border-cyan/15 bg-navy-900 shadow-[0_8px_30px_rgb(0_0_0/0.3)]">
           <GameImage src="/images/login-truck.png" alt="" sizes="60vw" className="absolute inset-y-0 left-[30%] right-0 [mask-image:linear-gradient(90deg,transparent,#000_40%)]" />
           <div className="absolute inset-0 bg-linear-to-r from-navy-950 via-navy-950/75 to-navy-950/30" />
@@ -110,14 +102,21 @@ function LoadAnalysis({ avatar, previewIds }) {
         <div className="grid items-start gap-3 xl:grid-cols-[17rem_minmax(0,1fr)_21rem]">
           <AssignedTruckPanel />
           <ShortlistedLoadCards m={m} highlight={highlight} />
-          <AgentPanel m={m} gender={avatar} onFinish={finish} />
+          <AgentPanel m={m} onFinish={finish} />
         </div>
 
         <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1fr)_21rem]">
           <AnalysisTabs m={m} highlight={highlight} tab={tab} onTab={setTab} />
           <div className="space-y-3">
             <SelectedLoadPanel m={m} highlight={highlight} onSelect={setConfirmId} onShowMap={() => setTab("route")} />
-            <DecisionReasonPanel key={`${m.selectedBestLoadId}-${m.accepted}`} m={m} onFinish={finish} />
+            <DecisionReasonPanel key={`${m.selectedBestLoadId}-${m.accepted}`} m={m} onFinish={proceed} />
+            <PracticeSummary slug={slug}>
+              {m.hasBrokerAttempt && (
+                <button type="button" onClick={() => router.push(ROUTES.brokers(slug))} className="mt-2 w-full rounded-lg border border-line py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
+                  Return to Broker
+                </button>
+              )}
+            </PracticeSummary>
           </div>
         </div>
 
@@ -139,10 +138,11 @@ function LoadAnalysis({ avatar, previewIds }) {
         const copy = phase4Page.completion;
         return (
           <PhaseComplete
-            title={copy.title}
+            missionName={mission03.title}
             subtitle={copy.subtitle}
             unlocked={copy.unlocked}
             stars={sum.stars}
+            stats={getCompletionStats(run, mission03)}
             rows={[
               ["Loads Compared", sum.loadsCompared],
               ["Calculation Accuracy", `${sum.accuracy}%`],
@@ -150,13 +150,8 @@ function LoadAnalysis({ avatar, previewIds }) {
               ["RPM Understanding", sum.rpmUnderstanding],
               ["Profitability Decision", sum.profitabilityDecision],
               ["Decision Quality", sum.decisionQuality],
-              ["Hints Used", sum.hintsUsed],
-              ["XP Earned", `+${sum.xp}`],
             ]}
-            primaryLabel={copy.cta}
-            onPrimary={() => router.push("/dispatcher/brokers")}
-            secondaryLabel={copy.secondary}
-            onSecondary={() => router.push("/home")}
+            onPrimary={() => router.push(ROUTES.brokers(slug))}
           />
         );
       })()}

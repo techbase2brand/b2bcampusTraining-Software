@@ -11,6 +11,8 @@
 // listed so the dashboard keeps working when those phases add them.
 
 export const statusCategories = {
+  // Early stages of a dispatch (load analysis / broker communication): counted in the total only.
+  draft: ["draft", "negotiating"],
   pending: ["negotiated", "ready-for-assignment", "assigned", "driver-confirmed"],
   active: ["ready-for-pickup", "en-route-pickup", "arrived-pickup", "loading", "picked-up", "in-transit", "monitoring"],
   completed: ["arrived-delivery", "delivered", "completed", "closed"],
@@ -21,6 +23,8 @@ export const attentionHealth = ["AT RISK", "DELAYED", "LATE"];
 
 // Badge tone per status id (mapped to classes in components/dashboard/StatusBadge.js).
 export const statusTones = {
+  draft: "cyan",
+  negotiating: "amber",
   negotiated: "cyan",
   "ready-for-assignment": "amber",
   assigned: "blue",

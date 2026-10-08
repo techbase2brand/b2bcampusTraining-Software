@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useGameProgress } from "./useGameProgress";
+import { useDispatchScope } from "./useDispatchScope";
 import { mission04 } from "@/data/phase5Missions";
 import { getTruckContext } from "@/lib/loadRules";
 import { fillTemplate } from "@/lib/text";
 import * as C from "@/lib/commsActions";
+import { getBrokerChecklist } from "@/lib/taskChecklists";
 import { initialCall, reduceCall, callIsLive } from "@/lib/callSim";
 
 // Runs `callback` every `delay` ms using the latest closure (delay null = paused).
@@ -23,12 +24,10 @@ function useInterval(callback, delay) {
 
 // Mission 4 state for the UI. Transitions live in lib/commsActions.js and persist through the game
 // store. The call itself (status, timer, mute) is transient UI state driven by lib/callSim.js.
-export function useBrokerMission(previewLoadId = null) {
-  const { state: stored, update } = useGameProgress();
-  // Dev preview substitutes a demo selected load without saving it.
-  const state = previewLoadId ? { ...stored, selectedBestLoadId: previewLoadId } : stored;
+export function useBrokerMission(slug) {
+  const { state, update, readOnly } = useDispatchScope(slug);
   const ctx = getTruckContext();
-  const { cc, comms, run, savedBrokerIds, recentBrokerIds } = C.readComms(state, ctx);
+  const { cc, comms, run, finalized, savedBrokerIds, recentBrokerIds } = C.readComms(state, ctx);
   const task = run.completed ? null : mission04.tasks[run.currentTask] ?? null;
 
   const [feedback, setFeedback] = useState(null); // mission-level feedback { tone, text }
@@ -76,7 +75,12 @@ export function useBrokerMission(previewLoadId = null) {
     loadStatus: C.getLoadStatus(comms),
     workflow: C.getWorkflow(comms, run),
     agentLine: C.getAgentLine(run),
-    allTasksDone: run.completedTasks.length >= mission04.tasks.length,
+    finalized,
+    readOnly,
+    checklist: C.readComms(state, ctx).cc ? getBrokerChecklist(state, ctx) : null,
+    // Mission 4 can only be completed once every task is done AND a load has been finalized.
+    allTasksDone: run.completedTasks.length >= mission04.tasks.length && finalized,
+    attemptDone: run.started && !run.completed && !task, // this attempt reached an agreement
     summary: () => C.getSummary(state, ctx),
 
     start: () => dispatch(C.startMission(state, ctx)),
@@ -99,6 +103,15 @@ export function useBrokerMission(previewLoadId = null) {
     confirmAgreement: () => dispatch(C.confirmAgreement(state, ctx)),
     aiSuggestion: () => C.aiSuggestion(state, ctx),
     requestHint: () => dispatch(C.takeHint(state, ctx)),
+    finalize: () => dispatch(C.finalizeLoad(state, ctx)),
+    tryAnother: () => {
+      setCall(initialCall);
+      setViewBrokerId(null);
+      setFeedback(null);
+      setCoach(null);
+      setHint(null);
+      return dispatch(C.tryAnotherLoad(state, ctx));
+    },
     complete: () => dispatch(C.completeMission(state, ctx)),
   };
 }

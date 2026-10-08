@@ -35,11 +35,13 @@ function Option({ label, checked, onChange }) {
 export default function LoadFilters({ applied, onApply, onReset, highlight }) {
   const [draft, setDraft] = useState(applied);
   // Open the secondary row automatically when one of its filters is already active.
-  const [more, setMore] = useState(Boolean(applied.loadTypes.length || applied.minRate != null || applied.maxRate != null));
+  const [moreOpen, setMore] = useState(Boolean(applied.loadTypes.length || applied.minRate != null || applied.maxRate != null || applied.maxWeight != null || applied.maxLengthFt != null));
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
   const { truck } = getTruckContext();
   const today = simDateKey(simulationConfig.clock.now);
   const section = (id) => filterSections.find((s) => s.id === id);
+  // A guided task can point at a secondary filter: keep its section open while it is highlighted.
+  const more = moreOpen || (section("size").highlight != null && highlight === section("size").highlight);
   const wrap = (id, children) => (
     <TaskHighlight active={highlight === section(id).highlight} className="min-w-0 p-0.5">
       <fieldset className="min-w-0">
@@ -58,7 +60,7 @@ export default function LoadFilters({ applied, onApply, onReset, highlight }) {
       }}
       className="panel p-3"
     >
-      <div className="grid gap-x-3 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[1.25fr_1.25fr_1.1fr_1.3fr_0.9fr]">
+      <div className="grid gap-x-3 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[1.25fr_1.25fr_1.1fr_1.3fr]">
         {wrap(
           "pickup",
           <>
@@ -108,17 +110,17 @@ export default function LoadFilters({ applied, onApply, onReset, highlight }) {
           </div>,
         )}
 
-        {wrap(
-          "size",
-          <div className="grid grid-cols-2 gap-1.5">
-            <input aria-label="Maximum weight (lbs)" inputMode="numeric" className={field} placeholder="Max lbs" value={draft.maxWeight ?? ""} onChange={(e) => set({ maxWeight: toNumber(e.target.value) })} />
-            <input aria-label="Maximum length (ft)" inputMode="numeric" className={field} placeholder="Max ft" value={draft.maxLengthFt ?? ""} onChange={(e) => set({ maxLengthFt: toNumber(e.target.value) })} />
-          </div>,
-        )}
       </div>
 
       {more && (
         <div className="mt-2.5 grid gap-x-3 gap-y-2.5 border-t border-line/60 pt-2.5 sm:grid-cols-2 lg:grid-cols-3">
+          {wrap(
+            "size",
+            <div className="grid grid-cols-2 gap-1.5">
+              <input aria-label="Maximum weight (lbs)" inputMode="numeric" className={field} placeholder="Max lbs" value={draft.maxWeight ?? ""} onChange={(e) => set({ maxWeight: toNumber(e.target.value) })} />
+              <input aria-label="Maximum length (ft)" inputMode="numeric" className={field} placeholder="Max ft" value={draft.maxLengthFt ?? ""} onChange={(e) => set({ maxLengthFt: toNumber(e.target.value) })} />
+            </div>,
+          )}
           {wrap(
             "requirements",
             <div className="flex flex-wrap gap-1.5">

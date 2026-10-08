@@ -13,7 +13,7 @@ const TOPIC_RES = Object.fromEntries(Object.entries(driverIntentPatterns).map(([
 
 // The negotiated load carried forward from Mission 4 (and its agreed rate).
 export function getNegotiatedLoad(state) {
-  const id = state.negotiatedLoadId ?? state.selectedBestLoadId ?? null;
+  const id = state.negotiatedLoadId ?? null; // only a FINALIZED load reaches dispatch
   const load = id ? getLoad(id) : null;
   if (!load) return null;
   const agreedRate = state.agreedRate ?? load.rate;

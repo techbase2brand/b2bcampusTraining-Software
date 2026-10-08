@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useGameProgress } from "./useGameProgress";
+import { useDispatchScope } from "./useDispatchScope";
 import { mission05 } from "@/data/phase6Missions";
 import { fillTemplate } from "@/lib/text";
 import * as D from "@/lib/dispatchActions";
+import { getDispatchChecklist } from "@/lib/taskChecklists";
 import { evaluateDriver } from "@/lib/driverRules";
 import { initialCall, reduceCall, callIsLive } from "@/lib/callSim";
 
@@ -23,10 +24,8 @@ function useInterval(callback, delay) {
 
 // Mission 5 state for the UI. Transitions live in lib/dispatchActions.js and persist through the
 // game store; the call itself (status, timer, mute) is transient UI state driven by lib/callSim.js.
-export function useDispatchMission(previewLoadId = null) {
-  const { state: stored, update } = useGameProgress();
-  // Dev preview substitutes a demo negotiated load without touching Mission 4's saved output.
-  const state = previewLoadId ? { ...stored, selectedBestLoadId: previewLoadId, negotiatedLoadId: previewLoadId } : stored;
+export function useDispatchMission(slug) {
+  const { state, update, readOnly } = useDispatchScope(slug);
   const { neg, d, run, entry, vars } = D.readDispatch(state);
   const task = run.completed ? null : mission05.tasks[run.currentTask] ?? null;
 
@@ -55,6 +54,8 @@ export function useDispatchMission(previewLoadId = null) {
 
   return {
     mission: mission05,
+    readOnly,
+    checklist: neg ? getDispatchChecklist(state) : null,
     run,
     task,
     taskText: task && neg ? fillTemplate(task.instruction, { ref: neg.load.referenceNumber }) : null,

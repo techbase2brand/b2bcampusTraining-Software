@@ -2,17 +2,22 @@
 
 import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Lock, PackageSearch } from "lucide-react";
+import { Lock, PackageSearch, ArrowRight } from "lucide-react";
 import { useRequireAccess } from "@/hooks/useRequireAccess";
 import { usePhase3Mission } from "@/hooks/usePhase3Mission";
 import { mission02, phase3Page } from "@/data/phase3Missions";
 import { loadBoardSources } from "@/data/loadFilters";
 import { dispatcherNav } from "@/data/navigation";
 import { canAccessRoute } from "@/lib/access";
+import { ROUTES, nextSequenceNumber } from "@/lib/dispatchRecords";
+import { simulationConfig } from "@/data/simulationConfig";
+import { useGameProgress } from "@/hooks/useGameProgress";
 import { filterLoads } from "@/lib/loadFiltering";
+import { validateShortlist } from "@/lib/loadRules";
+import { getShortlistCta } from "@/lib/shortlistCta";
 import DispatcherLayout from "@/components/dispatcher/DispatcherLayout";
 import GameButton from "@/components/game/GameButton";
-import Phase3Hero from "./Phase3Hero";
+import MissionTaskBar from "@/components/game/MissionTaskBar";
 import AssignedTruckStrip from "./AssignedTruckStrip";
 import LoadFilters from "./LoadFilters";
 import LoadResultsTable from "./LoadResultsTable";
@@ -25,8 +30,27 @@ import CompatibilityReview from "./CompatibilityReview";
 import ShortlistAction from "./ShortlistAction";
 import PhaseProgressCard from "./PhaseProgressCard";
 import PhaseComplete from "@/components/training/PhaseComplete";
+import { getCompletionStats } from "@/lib/completionStats";
 
 const LEVEL_ID = mission02.levelId;
+
+// Sticky action bar: the ONE strongest action on the Load Board, and exactly what is still missing.
+function ShortlistBar({ count, min, validity, missionDone, tasksDone, tasksLeft, creating, onContinue, onComplete }) {
+  const cta = getShortlistCta({ count, min, validity, missionDone, tasksDone, tasksLeft, creating });
+  const action = { label: cta.label, disabled: cta.disabled, onClick: cta.kind === "complete" ? onComplete : onContinue };
+  const text = cta.text;
+
+  return (
+    <section aria-label="Shortlist actions" className="sticky bottom-3 z-30 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-cyan/40 bg-navy-900/95 px-4 py-3 shadow-[0_8px_30px_rgb(0_0_0/0.5)] backdrop-blur">
+      <p className="min-w-0 flex-1 basis-64 text-sm font-semibold text-ink" aria-live="polite">
+        {text}
+      </p>
+      <GameButton onClick={action.onClick} disabled={action.disabled} className="uppercase tracking-wide">
+        {action.label} <ArrowRight className="size-4" aria-hidden="true" />
+      </GameButton>
+    </section>
+  );
+}
 
 // Access gate. The board itself mounts only once the student may see it (hooks below depend on it).
 export default function LoadBoardPage() {
@@ -53,22 +77,46 @@ export default function LoadBoardPage() {
     );
   }
 
-  return <LoadBoard avatar={state.avatarSelection ?? "male"} />;
+  return <LoadBoard />;
 }
 
-function LoadBoard({ avatar }) {
+function LoadBoard() {
   const router = useRouter();
   const m = usePhase3Mission();
   const [showComplete, setShowComplete] = useState(false);
+  const [creating, setCreating] = useState(null); // { slug } while the success notice is shown
+  const [createError, setCreateError] = useState(null);
+  const { state, createDispatch } = useGameProgress();
   const { run, task, filters, selectedLoad } = m;
-  const toAnalysis = () => router.push("/dispatcher/load-analysis");
+
+  const completeMission = () => {
+    m.complete();
+    setShowComplete(true);
+  };
+  const validity = validateShortlist(m.shortlistedIds);
+  const { min } = simulationConfig.shortlist;
+  const tasksLeft = mission02.tasks.length - run.completedTasks.length;
+
+  // CONTINUE TO ANALYSIS: create the dispatch (this also resets the builder, but only after the
+  // record exists), then go to its own route. The shortlist now lives inside that dispatch.
+  function continueToAnalysis() {
+    const res = createDispatch(m.shortlistedIds);
+    if (!res.ok) {
+      setCreateError(res.message);
+      return;
+    }
+    setShowComplete(false);
+    setCreateError(null);
+    setCreating({ slug: res.slug });
+    setTimeout(() => router.push(ROUTES.analysis(res.slug)), 1100);
+  }
 
   const results = filterLoads(filters);
   const highlight = run.started && !run.completed ? task?.highlight ?? null : null;
   const pct = Math.round((run.completedTasks.length / mission02.tasks.length) * 100);
 
   const footer = (
-    <PhaseProgressCard pct={pct} phaseLabel="Phase 3 Progress" levelLabel={`Level ${LEVEL_ID}`} title={mission02.title} />
+    <PhaseProgressCard pct={pct} phaseLabel="Mission 2 Progress" levelLabel={`Level ${LEVEL_ID}`} title={mission02.title} />
   );
 
   return (
@@ -78,7 +126,30 @@ function LoadBoard({ avatar }) {
       footer={footer}
     >
       <div className="mx-auto max-w-[110rem] space-y-4">
-        <Phase3Hero gender={avatar} m={m} />
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-cyan/25 bg-navy-900/80 px-4 py-2">
+          <p className="text-sm font-extrabold uppercase tracking-wide text-ink">
+            <span className="mr-2 text-[10px] tracking-[0.3em] text-gold">NEW DISPATCH</span>
+            Dispatch #{String(nextSequenceNumber(state)).padStart(3, "0")}
+          </p>
+          <p className="text-xs text-ink-dim">
+            Shortlist <span className="font-bold tabular-nums text-ink">{m.shortlistedIds.length} / {simulationConfig.shortlist.max}</span>. Continue to analysis to create it. Earlier dispatches stay in{" "}
+            <button type="button" onClick={() => router.push(ROUTES.hub)} className="font-semibold text-cyan-bright underline-offset-2 hover:underline">
+              Dispatches
+            </button>
+            .
+          </p>
+        </div>
+        {creating && (
+          <p role="status" className="rounded-xl border border-success/40 bg-success/10 px-4 py-2 text-sm font-semibold text-success">
+            Dispatch #{String(Number(creating.slug.slice(-4))).padStart(3, "0")} created. Taking you to Load Analysis.
+          </p>
+        )}
+        {createError && (
+          <p role="alert" className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-2 text-sm font-semibold text-danger">
+            {createError}
+          </p>
+        )}
+        <MissionTaskBar eyebrow={phase3Page.eyebrow} title={phase3Page.title} m={m} hideFinishedCta onComplete={completeMission} />
         <AssignedTruckStrip />
 
         <section
@@ -136,17 +207,22 @@ function LoadBoard({ avatar }) {
 
         <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
           <ShortlistPanel m={m} highlight={highlight} />
-          <Phase3MissionPanel
-            m={m}
-            onContinue={toAnalysis}
-            onComplete={() => {
-              m.complete();
-              setShowComplete(true);
-            }}
-          />
+          <Phase3MissionPanel m={m} />
         </div>
 
         <HowItWorks />
+
+        <ShortlistBar
+          count={m.shortlistedIds.length}
+          min={min}
+          validity={validity}
+          missionDone={run.completed}
+          tasksDone={m.allTasksDone}
+          tasksLeft={tasksLeft}
+          creating={Boolean(creating)}
+          onContinue={continueToAnalysis}
+          onComplete={completeMission}
+        />
       </div>
 
       {showComplete && run.completed && (() => {
@@ -154,23 +230,18 @@ function LoadBoard({ avatar }) {
         const copy = phase3Page.completion;
         return (
           <PhaseComplete
-            title={copy.title}
+            missionName={mission02.title}
             subtitle={copy.subtitle}
             unlocked={copy.unlocked}
             stars={sum.stars}
+            stats={getCompletionStats(run, mission02)}
             rows={[
               ["Loads Reviewed", sum.loadsReviewed],
               ["Compatible Loads Found", sum.compatibleFound],
               ["Shortlisted Loads", sum.shortlisted],
               ["Incorrect Selections", sum.incorrect],
-              ["Hints Used", sum.hintsUsed],
-              ["Accuracy", `${sum.accuracy}%`],
-              ["XP Earned", `+${sum.xp}`],
             ]}
-            primaryLabel={copy.cta}
-            onPrimary={toAnalysis}
-            secondaryLabel={copy.secondary}
-            onSecondary={() => router.push("/home")}
+            onPrimary={continueToAnalysis}
           />
         );
       })()}

@@ -6,6 +6,8 @@ import {
   getSnapshot,
   getServerSnapshot,
   updateGameState,
+  updateDispatch,
+  createDispatch,
   resetGameState,
 } from "@/lib/gameStore";
 
@@ -17,6 +19,8 @@ export function useGameProgress() {
     state,
     ready: state !== null,
     update: updateGameState,
+    updateDispatch,
+    createDispatch,
     reset: resetGameState,
   };
 }

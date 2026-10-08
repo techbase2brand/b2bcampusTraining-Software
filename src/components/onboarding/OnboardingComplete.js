@@ -34,7 +34,7 @@ export default function OnboardingComplete({ state, onFinish, onBack }) {
         <div className="flex items-center gap-4 rounded-2xl border border-gold/40 bg-surface/90 p-4">
           <Trophy className="size-9 shrink-0 text-gold-bright" aria-hidden="true" />
           <div>
-            <p className="font-bold text-gold-bright">Phase 1 Unlocked</p>
+            <p className="font-bold text-gold-bright">Mission 1 Unlocked</p>
             <p className="text-sm font-semibold text-cyan-bright">Dispatcher Desk Setup</p>
             <p className="text-xs text-ink-dim">Get familiar with your workspace and tools.</p>
           </div>

@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useGameProgress } from "./useGameProgress";
+import { useDispatchScope } from "./useDispatchScope";
 import { mission06, trackingStatuses } from "@/data/phase7Missions";
 import { fillTemplate, formatDuration } from "@/lib/text";
 import * as T from "@/lib/trackingActions";
+import { getTrackingChecklist } from "@/lib/taskChecklists";
 import { fmtDateTime } from "@/lib/trackingComms";
 import { initialCall, reduceCall, callIsLive } from "@/lib/callSim";
 
@@ -24,10 +25,8 @@ function useInterval(callback, delay) {
 // Mission 6 state for the UI. Transitions live in lib/trackingActions.js (and the scripted trip in
 // lib/trackingEngine.js); they persist through the game store. The call itself (status, timer,
 // mute) is transient UI state driven by lib/callSim.js.
-export function useTrackingMission(preview = false) {
-  const { state: stored, update } = useGameProgress();
-  // Dev preview substitutes a demo assignment without touching the saved Phase 6 output.
-  const state = preview && !stored.assignedLoadId ? { ...stored, ...T.previewAssignment() } : stored;
+export function useTrackingMission(slug) {
+  const { state, update, readOnly } = useDispatchScope(slug);
   const c = T.readTracking(state);
   const task = c.run.completed ? null : mission06.tasks[c.run.currentTask] ?? null;
 
@@ -53,6 +52,8 @@ export function useTrackingMission(preview = false) {
   const { snap, t, tl } = c;
   return {
     mission: mission06,
+    readOnly,
+    checklist: getTrackingChecklist(state),
     ctx: c,
     run: c.run,
     task,

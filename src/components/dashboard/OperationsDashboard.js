@@ -3,6 +3,7 @@
 import * as Icons from "lucide-react";
 import { Truck, Radio, Hourglass, CheckCircle2, AlertTriangle, ArrowRight, Trophy, Star, Flame, Zap, MapPin, Gauge, Clock, PhoneCall, HeartPulse, Activity } from "lucide-react";
 import { dashboardCopy } from "@/data/dashboardStatus";
+import { features } from "@/data/features";
 import { formatCurrency } from "@/lib/text";
 import GameButton from "@/components/game/GameButton";
 import StatusBadge, { toneClasses } from "./StatusBadge";
@@ -98,7 +99,7 @@ export function StatCards({ cards, onNavigate }) {
 }
 
 // The shipment currently being worked, from the real carried-forward state. Never fabricated.
-export function CurrentShipment({ current, hasPending, actions, onNavigate }) {
+export function CurrentShipment({ current, hasPending, actions, onNavigate, onOpenRoute }) {
   if (!current) {
     const target = hasPending ? actions.find((a) => a.navId === "dispatch") : actions.find((a) => a.navId === "load-board");
     return (
@@ -145,8 +146,8 @@ export function CurrentShipment({ current, hasPending, actions, onNavigate }) {
       </dl>
       {canTrack && (
         <div className="border-t border-line/60 px-4 py-2.5">
-          <GameButton size="sm" onClick={() => onNavigate("tracking")}>
-            View Tracking <ArrowRight className="size-3.5" aria-hidden="true" />
+          <GameButton size="sm" onClick={() => onOpenRoute(current.resumeRoute)}>
+            {current.label}: View Tracking <ArrowRight className="size-3.5" aria-hidden="true" />
           </GameButton>
         </div>
       )}
@@ -184,7 +185,7 @@ export function TrackingSummary({ tracking }) {
   );
 }
 
-export function NeedsAttention({ items, onNavigate }) {
+export function NeedsAttention({ items, onNavigate, onOpenRoute }) {
   return (
     <Panel title="Needs Attention" icon={AlertTriangle}>
       {items.length ? (
@@ -193,8 +194,8 @@ export function NeedsAttention({ items, onNavigate }) {
             <li key={a.id} className={`flex items-start gap-2 rounded-lg border px-2.5 py-1.5 text-xs leading-snug text-ink ${toneClasses[a.tone]}`}>
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
               <span className="min-w-0 flex-1">{a.text}</span>
-              {a.navId && (
-                <button type="button" onClick={() => onNavigate(a.navId)} className="shrink-0 font-bold underline-offset-2 hover:underline">
+              {(a.route || a.navId) && (
+                <button type="button" onClick={() => (a.route ? onOpenRoute(a.route) : onNavigate(a.navId))} className="shrink-0 font-bold underline-offset-2 hover:underline">
                   Open
                 </button>
               )}
@@ -210,16 +211,30 @@ export function NeedsAttention({ items, onNavigate }) {
   );
 }
 
-export function DispatchOverview({ records, actions, onNavigate }) {
-  const can = (navId) => actions.some((a) => a.navId === navId);
+export function DispatchOverview({ records, onNavigate, onOpenRoute }) {
   return (
-    <Panel id="dispatch-overview" title="Dispatch Overview" icon={Truck} className="scroll-mt-20">
+    <Panel
+      id="dispatch-overview"
+      title="Dispatch Overview"
+      icon={Truck}
+      className="scroll-mt-20"
+      action={
+        <span className="flex items-center gap-1.5">
+          <button type="button" onClick={() => onOpenRoute("/dispatcher/dispatches")} className="rounded-md border border-line px-2 py-0.5 text-[11px] font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
+            View all
+          </button>
+          <button type="button" onClick={() => onNavigate("load-board")} className="rounded-md border border-cyan/40 bg-cyan/10 px-2 py-0.5 text-[11px] font-bold text-cyan-bright transition-colors hover:bg-cyan/20">
+            + New Dispatch
+          </button>
+        </span>
+      }
+    >
       {records.length ? (
         <div className="mt-2.5 max-h-72 overflow-auto rounded-xl border border-line/60">
-          <table className="w-full min-w-[46rem] text-left text-xs">
+          <table className="w-full min-w-[58rem] text-left text-xs">
             <thead className="sticky top-0 bg-navy-900 text-[10px] uppercase tracking-wide text-ink-dim">
               <tr>
-                {["Load", "Driver", "Truck", "Route", "Rate", "Status", "ETA", "Action"].map((h) => (
+                {["Dispatch", "Load", "Driver", "Truck", "Route", "Rate", "Stage", "Status", "ETA", "Action"].map((h) => (
                   <th key={h} className="px-3 py-2 font-semibold">
                     {h}
                   </th>
@@ -227,39 +242,34 @@ export function DispatchOverview({ records, actions, onNavigate }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-line/50">
-              {records.map((r) => {
-                const navId = r.category === "pending" ? "dispatch" : "tracking";
-                return (
-                  <tr key={r.loadId} className="transition-colors hover:bg-cyan/5">
-                    <td className="px-3 py-2 font-bold text-ink">{r.reference}</td>
-                    <td className="px-3 py-2 text-ink">{r.driverName ?? "-"}</td>
-                    <td className="px-3 py-2 text-ink">{r.truckId ?? "-"}</td>
-                    <td className="whitespace-nowrap px-3 py-2 text-ink">{r.route}</td>
-                    <td className="px-3 py-2 font-semibold tabular-nums text-success">{formatCurrency(r.agreedRate)}</td>
-                    <td className="px-3 py-2">
-                      <span className="flex flex-wrap items-center gap-1">
-                        <StatusBadge statusId={r.statusId} label={r.statusLabel} />
-                        {r.category === "active" && r.health && r.health !== "ON TRACK" && <StatusBadge health={r.health} label={r.health} />}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-ink-dim">{r.eta ?? "-"}</td>
-                    <td className="px-3 py-2">
-                      {can(navId) ? (
-                        <button type="button" onClick={() => onNavigate(navId)} className="rounded-md border border-cyan/40 bg-cyan/10 px-2 py-0.5 text-[11px] font-bold text-cyan-bright transition-colors hover:bg-cyan/20">
-                          {navId === "dispatch" ? "Dispatch" : "Track"}
-                        </button>
-                      ) : (
-                        <span className="text-ink-dim">-</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              {records.map((r) => (
+                <tr key={r.slug} className="transition-colors hover:bg-cyan/5">
+                  <td className="whitespace-nowrap px-3 py-2 font-bold text-ink">#{r.number}</td>
+                  <td className="px-3 py-2 font-bold text-ink">{r.reference ?? <span className="font-normal text-ink-dim">{r.shortlistCount} shortlisted</span>}</td>
+                  <td className="px-3 py-2 text-ink">{r.driverName ?? "-"}</td>
+                  <td className="px-3 py-2 text-ink">{r.truckId ?? "-"}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-ink">{r.route ?? "-"}</td>
+                  <td className="px-3 py-2 font-semibold tabular-nums text-success">{r.agreedRate != null ? formatCurrency(r.agreedRate) : "-"}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-ink-dim">{r.stageLabel}</td>
+                  <td className="px-3 py-2">
+                    <span className="flex flex-wrap items-center gap-1">
+                      <StatusBadge statusId={r.statusId} label={r.statusLabel} />
+                      {r.category === "active" && r.health && r.health !== "ON TRACK" && <StatusBadge health={r.health} label={r.health} />}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 text-ink-dim">{r.eta ?? "-"}</td>
+                  <td className="px-3 py-2">
+                    <button type="button" onClick={() => onOpenRoute(r.resumeRoute)} className="rounded-md border border-cyan/40 bg-cyan/10 px-2 py-0.5 text-[11px] font-bold text-cyan-bright transition-colors hover:bg-cyan/20">
+                      {r.completed ? "View" : "Resume"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
       ) : (
-        <p className="mt-2.5 rounded-xl border border-dashed border-line px-3 py-4 text-center text-xs text-ink-dim">No dispatches yet. Loads appear here once you agree a rate with a broker.</p>
+        <p className="mt-2.5 rounded-xl border border-dashed border-line px-3 py-4 text-center text-xs text-ink-dim">No dispatches yet. Start one from the Load Board.</p>
       )}
     </Panel>
   );
@@ -305,11 +315,11 @@ export function TrainingProgress({ progress }) {
     [Zap, "Level", progress.level],
     [Trophy, "XP", progress.xp],
     [Star, "Stars", progress.stars],
-    [Flame, "Streak", progress.streak],
+    ...(features.streak ? [[Flame, "Streak", progress.streak]] : []),
   ];
   return (
     <Panel title="Training Progress" icon={Trophy}>
-      <dl className="mt-2.5 grid grid-cols-4 gap-1.5">
+      <dl className="mt-2.5 grid grid-cols-3 gap-1.5">
         {rows.map(([Icon, label, value]) => (
           <div key={label} className="rounded-lg bg-navy-900/60 px-1.5 py-1 text-center">
             <dd className="flex items-center justify-center gap-1 text-sm font-extrabold tabular-nums text-ink">

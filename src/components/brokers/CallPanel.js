@@ -1,20 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, PhoneOff, Mic, MicOff, Grid3x3, Volume2, NotebookPen, Lock } from "lucide-react";
+import { Phone, NotebookPen, Lock } from "lucide-react";
 import { callScript } from "@/data/brokerComms";
 import { formatTimer } from "@/lib/callSim";
 import GameButton from "@/components/game/GameButton";
+import CallControls from "@/components/game/CallControls";
+import { features } from "@/data/features";
+import GameDrawer from "@/components/game/GameDrawer";
 import BrokerAvatar from "./BrokerAvatar";
 
 const BARS = 14;
-const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
 
 // Simulated call (no telephony). Three clear states: Ready, Connected (live controls), Call Ended.
 // Transcript and notes stay available afterwards. State/transcript are separate from the UI so a
 // microphone, speech-to-text or AI voice can be plugged in later.
-export default function CallPanel({ m }) {
+export default function CallPanel({ m, embedded = false }) {
   const [say, setSay] = useState("");
+  const [notesOpen, setNotesOpen] = useState(false);
   const { call, cc, correctSelected } = m;
   const dialing = call.status === "dialing";
   const connected = call.status === "connected";
@@ -48,13 +51,15 @@ export default function CallPanel({ m }) {
   const statusTone = connected ? "text-success" : dialing ? "text-gold-bright" : ended ? "text-danger" : "text-ink-dim";
 
   return (
-    <section aria-label="Call panel" className="panel flex flex-col gap-2.5 p-3">
-      <div className="flex items-center justify-between gap-2 text-[10px]">
-        <span className="rounded-full bg-blue px-2 py-0.5 font-bold text-white">{manual.label}</span>
-        <span className="flex items-center gap-1 text-ink-dim/70" title={ai.note}>
-          <Lock className="size-2.5" aria-hidden="true" /> {ai.label} · {ai.note}
-        </span>
-      </div>
+    <section aria-label="Call panel" className={`flex flex-col gap-2.5 p-3 ${embedded ? "" : "panel"}`}>
+      {features.aiCall && (
+        <div className="flex items-center justify-between gap-2 text-[10px]">
+          <span className="rounded-full bg-blue px-2 py-0.5 font-bold text-white">{manual.label}</span>
+          <span className="flex items-center gap-1 text-ink-dim/70" title={ai.note}>
+            <Lock className="size-2.5" aria-hidden="true" /> {ai.label} · {ai.note}
+          </span>
+        </div>
+      )}
 
       <div className="text-center">
         <BrokerAvatar broker={cc.broker} className="mx-auto size-12 text-base" />
@@ -63,7 +68,7 @@ export default function CallPanel({ m }) {
           {status}
         </p>
 
-        {live && (
+        {features.callExtras && live && (
           <div className="mt-1.5 flex h-8 items-center justify-center gap-1" aria-hidden="true">
             {Array.from({ length: BARS }, (_, i) => (
               <span
@@ -84,36 +89,7 @@ export default function CallPanel({ m }) {
 
       {live ? (
         <>
-          <div className="grid grid-cols-4 gap-1.5">
-            {[
-              ["mute", call.muted ? MicOff : Mic, "Mute", call.muted],
-              ["keypad", Grid3x3, "Keypad", call.keypad],
-              ["speaker", Volume2, "Speaker", call.speaker],
-            ].map(([type, Icon, label, on]) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => m.toggleCall(type)}
-                disabled={!connected}
-                aria-pressed={on}
-                className={`flex flex-col items-center gap-0.5 rounded-lg border py-1.5 text-[10px] font-semibold transition-colors disabled:opacity-40 ${on ? "border-cyan bg-cyan/15 text-cyan-bright" : "border-line bg-surface-2 text-ink"}`}
-              >
-                <Icon className="size-4" aria-hidden="true" /> {label}
-              </button>
-            ))}
-            <button type="button" onClick={m.endCall} className="flex flex-col items-center gap-0.5 rounded-lg border border-danger/50 bg-danger/20 py-1.5 text-[10px] font-semibold text-danger transition-colors hover:bg-danger/30">
-              <PhoneOff className="size-4" aria-hidden="true" /> End Call
-            </button>
-          </div>
-          {call.keypad && (
-            <div className="grid grid-cols-3 gap-1" aria-label="Keypad">
-              {KEYS.map((k) => (
-                <span key={k} className="rounded-md bg-surface-2 py-1 text-center text-xs font-semibold text-ink">
-                  {k}
-                </span>
-              ))}
-            </div>
-          )}
+          <CallControls call={call} connected={connected} onToggle={m.toggleCall} onEnd={m.endCall} />
         </>
       ) : (
         <GameButton size="sm" onClick={m.startCall}>
@@ -124,7 +100,7 @@ export default function CallPanel({ m }) {
       {(live || transcript.length > 0) && (
         <div>
           <p className="label-xs">{ended ? "Call transcript" : "Live transcript"}</p>
-          <ul className="mt-1 max-h-32 space-y-1 overflow-y-auto rounded-lg border border-line/60 bg-navy-900/60 p-2" aria-live="polite">
+          <ul className="scroll-compact mt-1 max-h-32 space-y-1 overflow-y-auto rounded-lg border border-line/60 bg-navy-900/60 p-2" aria-live="polite">
             {transcript.length === 0 && <li className="text-[11px] text-ink-dim">{dialing ? "Connecting..." : "No speech yet."}</li>}
             {transcript.map((t, i) => (
               <li key={i} className="text-[11px] leading-snug">
@@ -146,6 +122,11 @@ export default function CallPanel({ m }) {
         </div>
       )}
 
+      <GameButton variant="ghost" size="sm" onClick={() => setNotesOpen(true)}>
+        <NotebookPen className="size-3.5" aria-hidden="true" /> View Call Notes {m.notes.length > 0 && `(${m.notes.length})`}
+      </GameButton>
+
+      <GameDrawer open={notesOpen} onClose={() => setNotesOpen(false)} title="Call Notes" subtitle={`Call with ${cc.broker.name}`}>
       <div>
         <div className="flex items-center justify-between">
           <p className="label-xs flex items-center gap-1">
@@ -168,6 +149,7 @@ export default function CallPanel({ m }) {
           {notesSaved ? "Notes Saved" : "Save Notes"}
         </GameButton>
       </div>
+      </GameDrawer>
     </section>
   );
 }

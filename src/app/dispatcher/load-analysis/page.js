@@ -1,13 +1,8 @@
-import { Suspense } from "react";
-import LoadAnalysisPage from "@/components/analysis/LoadAnalysisPage";
+import LegacyRouteRedirect from "@/components/dispatches/LegacyRouteRedirect";
 
 export const metadata = { title: "Load Analysis | B2B Logistics" };
 
+// Old non-slug URL: sends the student to the matching dispatch, the Dispatches page, or the Load Board.
 export default function Page() {
-  // useSearchParams (dev preview flag) requires a Suspense boundary.
-  return (
-    <Suspense fallback={<main className="game-backdrop min-h-screen" />}>
-      <LoadAnalysisPage />
-    </Suspense>
-  );
+  return <LegacyRouteRedirect kind="analysis" />;
 }

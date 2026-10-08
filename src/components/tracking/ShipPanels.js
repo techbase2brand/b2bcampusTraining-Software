@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, FastForward, PhoneCall, Truck, Clock } from "lucide-react";
+import { Truck, Clock } from "lucide-react";
 import GameButton from "@/components/game/GameButton";
 import TaskHighlight from "@/components/dispatcher/TaskHighlight";
 import TruckThumb from "@/components/dispatcher/TruckThumb";
@@ -51,40 +51,6 @@ export function ActiveShipments({ m }) {
         ))}
         {m.shipments.length === 0 && <li className="rounded-lg border border-dashed border-line p-4 text-center text-xs text-ink-dim">No active shipments.</li>}
       </ul>
-    </section>
-  );
-}
-
-// Training controls (not real dispatch actions): they move the scripted trip forward.
-export function TrainingControls({ m }) {
-  const { run, t, tl, open, highlight } = m;
-  const started = run.started;
-  const tripStarted = t.step >= 1;
-  const atEnd = t.step >= tl.lastStep;
-  return (
-    <section aria-label="Training controls" className="panel p-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-extrabold text-ink">Trip Controls</h2>
-        <span className="rounded bg-gold/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-gold-bright">Training</span>
-      </div>
-      <div className="mt-2.5 space-y-1.5">
-        <TaskHighlight active={highlight === "start-trip"}>
-          <GameButton className="w-full" size="sm" disabled={!started || tripStarted} onClick={m.startTrip}>
-            <Play className="size-3.5" aria-hidden="true" /> Start Trip
-          </GameButton>
-        </TaskHighlight>
-        <TaskHighlight active={highlight === "advance"}>
-          <GameButton className="w-full" size="sm" variant="ghost" disabled={!started || !tripStarted || atEnd || open} onClick={m.advance}>
-            <FastForward className="size-3.5" aria-hidden="true" /> Advance Simulation
-          </GameButton>
-        </TaskHighlight>
-      </div>
-      <p className="mt-2 text-[10px] leading-snug text-ink-dim">
-        {!started ? "Start the mission first." : !tripStarted ? "Start the trip to begin monitoring." : open ? "Resolve the open delay before moving on." : atEnd ? "The shipment has reached the delivery location." : "Moves the shipment to its next event."}
-      </p>
-      <p className="mt-1.5 flex items-center gap-1 text-[10px] text-ink-dim">
-        <PhoneCall className="size-3 shrink-0" aria-hidden="true" /> Check calls: use the Comms panel.
-      </p>
     </section>
   );
 }

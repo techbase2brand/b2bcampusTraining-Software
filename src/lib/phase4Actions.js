@@ -12,6 +12,7 @@ import { scoreLoads, getDecisionBand, getWeakMetrics, resolveQuestionAnswer, eva
 import { formatMetric } from "./analysisFormat";
 import { finishMission, calcAccuracy } from "./progression";
 import { fillTemplate } from "./text";
+import { isFinalized, leaveAttemptPatch } from "./practiceAttempts";
 
 const EMPTY_RUN = { ...initialMissionProgress, missionId: mission03.id, wrongByTask: {}, decision: null };
 const addUnique = (list, items) => [...new Set([...list, ...items])];
@@ -20,18 +21,27 @@ const metricFormat = (metric) => mission03.comparisonMetrics.find((m) => m.key =
 // Read the Phase 4 slice of the game state. Analyses are computed from the shortlist IDs.
 export function readAnalysis(state, ctx = getTruckContext()) {
   const shortlistedIds = state.shortlistedLoadIds ?? [];
+  // The candidate is only meaningful while it is still on the shortlist.
+  const candidate = state.selectedBestLoadId && shortlistedIds.includes(state.selectedBestLoadId) ? state.selectedBestLoadId : null;
+  const cd = state.candidateDecision;
   return {
     run: { ...EMPTY_RUN, ...(state.missionRuns?.[mission03.id] ?? {}) },
     shortlistedIds,
     analyses: shortlistedIds.map(getLoad).filter(Boolean).map((l) => analyzeLoad(l, ctx)),
     viewedIds: state.analysisViewedLoadIds ?? [],
-    selectedBestLoadId: state.selectedBestLoadId ?? null,
+    selectedBestLoadId: candidate,
     reasonIds: state.decisionReasonIds ?? [],
+    // Decision on the CURRENT candidate only; the mission ledger (run.decision) is separate.
+    decision: cd && cd.loadId === candidate ? cd : null,
+    finalized: isFinalized(state),
   };
 }
 
 const refOf = (id) => getLoad(id)?.referenceNumber ?? id;
 const currentTask = (run) => (run.completed ? null : mission03.tasks[run.currentTask] ?? null);
+// Choosing a candidate / submitting a decision is open once every earlier task is done (the final
+// task itself, or any time after it). Before that the analysis tasks keep their order.
+const practiceReady = (run) => run.started && (!currentTask(run) || currentTask(run).rule?.type === "select-best");
 
 function award(state, run, task) {
   const gained = taskXp[task.id] ?? 0;
@@ -124,24 +134,27 @@ export function answerQuestion(state, answer, ctx = getTruckContext()) {
   return { patch: { xp: next.xp, missionRuns: withRun(state, next.run) }, message: { tone: "success", text }, completed: [task.id] };
 }
 
-// Student picked a load as their best candidate (after confirming). Only valid on the final task.
+// Student picked a load as their CURRENT CANDIDATE (after confirming). Not final: it can be changed
+// as often as they like until a load is finalized. Switching candidate archives the broker attempt.
 export function chooseBest(state, loadId, ctx = getTruckContext()) {
-  const { run, analyses } = readAnalysis(state, ctx);
-  const task = currentTask(run);
-  if (!run.started || task?.rule?.type !== "select-best" || !analyses.some((a) => a.loadId === loadId)) return { patch: {}, completed: [] };
-  return { patch: { selectedBestLoadId: loadId, decisionReasonIds: [], missionRuns: withRun(state, { ...run, decision: null }) }, completed: [] };
+  const { run, analyses, selectedBestLoadId, finalized } = readAnalysis(state, ctx);
+  if (!practiceReady(run) || finalized || !analyses.some((a) => a.loadId === loadId) || selectedBestLoadId === loadId) return { patch: {}, completed: [] };
+  const leave = state.commsLoadId && state.commsLoadId !== loadId ? leaveAttemptPatch(state) : {};
+  return { patch: { ...leave, selectedBestLoadId: loadId, decisionReasonIds: [], candidateDecision: null }, completed: [] };
 }
 
+// Back to comparison: clears the candidate and its decision, keeping progress and XP.
 export function compareAgain(state) {
-  const { run } = readAnalysis(state);
-  return { patch: { selectedBestLoadId: null, decisionReasonIds: [], missionRuns: withRun(state, { ...run, decision: null }) }, completed: [] };
+  if (isFinalized(state)) return { patch: {}, completed: [] };
+  return { patch: { ...leaveAttemptPatch(state), selectedBestLoadId: null, decisionReasonIds: [], candidateDecision: null }, completed: [] };
 }
 
-// Evaluate the chosen load and the student's reasons.
+// Evaluate the candidate and the student's reasons. Feedback only: it never locks the student in.
 export function submitDecision(state, reasonIds, ctx = getTruckContext()) {
-  const { run, analyses, selectedBestLoadId, viewedIds } = readAnalysis(state, ctx);
+  const { run, analyses, selectedBestLoadId, viewedIds, finalized } = readAnalysis(state, ctx);
   const task = currentTask(run);
-  if (!run.started || task?.rule?.type !== "select-best" || !selectedBestLoadId) return { patch: {}, completed: [] };
+  if (!practiceReady(run) || finalized || !selectedBestLoadId) return { patch: {}, completed: [] };
+  const onTask = task?.rule?.type === "select-best"; // first time through: the decision completes the task
 
   const fb = mission03.feedback;
   const band = getDecisionBand(selectedBestLoadId, analyses);
@@ -149,10 +162,19 @@ export function submitDecision(state, reasonIds, ctx = getTruckContext()) {
   const label = (id) => mission03.decisionReasons.find((r) => r.id === id)?.label ?? id;
   const wrongByTask = { ...run.wrongByTask };
   const reject = (message, selectionCleared) => {
-    wrongByTask[task.id] = (wrongByTask[task.id] ?? 0) + 1;
-    const nextRun = { ...run, attempts: run.attempts + 1, wrongByTask, decision: { accepted: false, band } };
+    // Incorrect attempts count towards accuracy only while the mission is still open.
+    let nextRun = run;
+    if (!run.completed) {
+      wrongByTask["select-best"] = (wrongByTask["select-best"] ?? 0) + 1;
+      nextRun = { ...run, attempts: run.attempts + 1, wrongByTask };
+    }
     return {
-      patch: { decisionReasonIds: reasonIds, ...(selectionCleared ? { selectedBestLoadId: null } : {}), missionRuns: withRun(state, nextRun) },
+      patch: {
+        decisionReasonIds: reasonIds,
+        candidateDecision: selectionCleared ? null : { loadId: selectedBestLoadId, accepted: false, band, reasonIds },
+        ...(selectionCleared ? { selectedBestLoadId: null } : {}),
+        missionRuns: withRun(state, nextRun),
+      },
       message,
       completed: [],
       outcome: { accepted: false, band },
@@ -170,11 +192,12 @@ export function submitDecision(state, reasonIds, ctx = getTruckContext()) {
     return reject({ tone: "error", text: fillTemplate(fb.reasonMismatch, { reasons: reasons.unsupported.map(label).join(", ") }) }, false);
   }
 
-  const accepted = { accepted: true, band, loadId: selectedBestLoadId, reasonIds };
-  const res = advance(state, { ...run, decision: accepted }, ctx, viewedIds);
+  const accepted = { loadId: selectedBestLoadId, accepted: true, band, reasonIds };
+  // XP and task completion happen once, through the ledger (advance skips tasks already done).
+  const res = onTask ? advance(state, { ...run, decision: accepted }, ctx, viewedIds) : { run, xp: state.xp, completed: [] };
   const copy = band === "strong" ? fb.strongMatch : fb.acceptable;
   return {
-    patch: { decisionReasonIds: reasonIds, xp: res.xp, missionRuns: withRun(state, res.run) },
+    patch: { decisionReasonIds: reasonIds, candidateDecision: accepted, xp: res.xp, missionRuns: withRun(state, res.run) },
     message: { tone: "success", title: copy.title, text: copy.text },
     completed: res.completed,
     outcome: { accepted: true, band },

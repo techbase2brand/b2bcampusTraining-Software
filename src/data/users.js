@@ -21,6 +21,15 @@ export const initialMissionProgress = {
 };
 
 export const initialGameState = {
+  // Save-format version. 2 = multi-dispatch (see lib/dispatchRecords.js, lib/dispatchMigration.js).
+  schemaVersion: 2,
+  // Student-created dispatch records (runtime data, not seed data). Each owns its shortlist, broker
+  // conversation, assignment and tracking; the flat operational fields below are only the legacy
+  // single-dispatch format (migrated into dispatch-0001) and the Load Board builder.
+  dispatches: [],
+  dispatchSeq: 0, // highest dispatch sequence number ever issued: slugs are never reused
+  activeDispatchSlug: null, // UI convenience only (last opened); never a source of truth
+  trainingLedger: { tasks: [], missions: [] }, // one-time rewards already granted ("mission:task", mission ids)
   isAuthenticated: false,
   profile: mockUser,
   avatarSelection: null, // "male" | "female" | null
@@ -49,9 +58,11 @@ export const initialGameState = {
   shortlistedLoadIds: [],
   selectedLoadId: null,
   loadChecks: {}, // { [loadId]: [checkCode, ...] } checks the student has revealed
-  // Phase 4 output
+  // Phase 4 / practice session. selectedBestLoadId is the CURRENT CANDIDATE: the load being practised
+  // with. It can change freely until the student finalizes (see loadFinalized below).
   selectedBestLoadId: null,
   decisionReasonIds: [],
+  candidateDecision: null, // { loadId, accepted, band, reasonIds } for the current candidate only
   analysisViewedLoadIds: [],
   answeredTaskIds: [],
 
@@ -67,8 +78,15 @@ export const initialGameState = {
   commsStats: { sent: 0, professional: 0 }, // messages sent / professionally worded
   communicationMode: null, // "chat" | "call" | "both"
   brokerConfirmed: false,
+  // FINAL result, written only by finalizeLoad(). Dispatch, Tracking and the dashboard read these.
   negotiatedLoadId: null,
   agreedRate: null,
+  loadFinalized: false,
+  finalizedBrokerId: null,
+  finalDecisionReasonIds: [],
+  // Lightweight record of practice attempts that were left without finalizing (IDs and results only):
+  // [{ id, loadId, brokerId, topics, negotiationAttempts, offeredRate, agreedRate, result }]
+  attemptHistory: [],
   savedBrokerIds: [],
   recentBrokerIds: [],
 

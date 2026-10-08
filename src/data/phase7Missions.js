@@ -272,28 +272,15 @@ export const exceptionScript = {
 };
 
 export const phase7Page = {
-  eyebrow: "Phase 7",
+  eyebrow: "Mission 6",
   title: "Live Tracking & Shipment Monitoring",
   subtitle: "Track the active load, perform check calls, monitor ETA and respond to delays or exceptions.",
   shipmentsTitle: "Active Shipments",
-  panelTabs: [
-    { id: "ship", label: "Shipments" },
-    { id: "map", label: "Map" },
-    { id: "comms", label: "Comms" },
-    { id: "details", label: "Details" },
-    { id: "log", label: "Log" },
-  ],
-  secondaryTabs: [
-    { id: "ship", label: "Shipments" },
-    { id: "comms", label: "Comms & Alerts" },
-    { id: "details", label: "Load & Driver" },
-    { id: "log", label: "Logs & Tasks" },
-  ],
   completion: {
     title: "SHIPMENT MONITORING COMPLETE",
     subtitle: "The load has arrived at delivery.",
     unlocked: "Next: Delivery, Documents & Load Closeout.",
-    cta: "Return to Level Map",
-    secondary: "Back to Tracking",
+    cta: "Start New Dispatch",
+    secondary: "View Dispatch History",
   },
 };

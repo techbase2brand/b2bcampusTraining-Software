@@ -97,6 +97,14 @@ export function removeFromShortlist(state, loadId, ctx = getTruckContext()) {
   return { ...out, actionFeedback: { tone: "success", text: mission02.feedback.shortlistRemoved } };
 }
 
+// Start over with a new shortlist. Progress, XP and reviewed loads are untouched.
+export function clearShortlist(state, ctx = getTruckContext()) {
+  const { board } = readBoard(state);
+  if (board.shortlistedLoadIds.length === 0) return { patch: {}, completed: [] };
+  const out = commit(state, { board: { ...board, shortlistedLoadIds: [] }, source: "shortlist" }, ctx);
+  return { ...out, actionFeedback: { tone: "success", text: mission02.feedback.shortlistRemoved } };
+}
+
 export function takeHint(state) {
   const { run } = readBoard(state);
   const task = run.completed ? null : mission02.tasks[run.currentTask];

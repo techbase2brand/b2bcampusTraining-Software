@@ -24,6 +24,7 @@ import {
   fallbackReply,
   getSuggestedQuestions,
 } from "./brokerChat";
+import { isFinalized, leaveAttemptPatch } from "./practiceAttempts";
 import { initialNegotiation, respondToRequest, acceptOffer, getMarketRange, suggestedAsk } from "./brokerNegotiation";
 
 const EMPTY_RUN = { ...initialMissionProgress, missionId: mission04.id };
@@ -41,13 +42,16 @@ const FRESH = {
 const addUnique = (list, items) => [...new Set([...list, ...items])];
 const REQUIRED = commsTopics.map((t) => t.id);
 
-// Read the Mission 4 slice. If the saved comms belong to a different selected load, start fresh.
+// Read the Mission 4 slice. The attempt fields describe ONE practice attempt (for the current
+// candidate load). If they belong to another load (older saves), the attempt starts fresh. The run
+// (started, completedTasks, XP) is a ledger that survives every attempt; only its task pointer
+// (currentTask) follows the attempt, so guidance restarts without re-awarding anything.
 export function readComms(state, ctx = getTruckContext()) {
   const cc = getCommsContext(state, ctx);
   const stored = { ...EMPTY_RUN, ...(state.missionRuns?.[mission04.id] ?? {}) };
   // Nothing exists before Start Mission: no selected broker, no messages. Stale saved values from an
   // earlier session are ignored, so the correct broker is never pre-selected or revealed.
-  const own = Boolean(cc) && state.commsLoadId === state.selectedBestLoadId && stored.started;
+  const own = Boolean(cc) && (state.commsLoadId == null || state.commsLoadId === state.selectedBestLoadId) && stored.started;
   const comms = own
     ? {
         selectedBrokerId: state.selectedBrokerId ?? null,
@@ -61,8 +65,8 @@ export function readComms(state, ctx = getTruckContext()) {
         stats: state.commsStats ?? FRESH.stats,
       }
     : FRESH;
-  const run = own || stored.completed ? stored : EMPTY_RUN;
-  return { cc, comms, run, savedBrokerIds: state.savedBrokerIds ?? [], recentBrokerIds: state.recentBrokerIds ?? [] };
+  const run = own || stored.completed ? stored : { ...stored, currentTask: 0 };
+  return { cc, comms, run, finalized: isFinalized(state), savedBrokerIds: state.savedBrokerIds ?? [], recentBrokerIds: state.recentBrokerIds ?? [] };
 }
 
 const currentTask = (run) => (run.completed ? null : mission04.tasks[run.currentTask] ?? null);
@@ -92,10 +96,12 @@ function advance(comms, run, xp, cc) {
   while (cur.started && !cur.completed) {
     const task = mission04.tasks[cur.currentTask];
     if (!task || !taskDone(task.rule, comms, cc)) break;
-    const gained = taskXp[task.id] ?? 0;
+    // A task is rewarded once, ever. A later practice attempt walks the same tasks without XP.
+    const first = !cur.completedTasks.includes(task.id);
+    const gained = first ? taskXp[task.id] ?? 0 : 0;
     totalXp += gained;
-    cur = { ...cur, completedTasks: [...cur.completedTasks, task.id], currentTask: cur.currentTask + 1, xpEarned: cur.xpEarned + gained };
-    completed.push(task.id);
+    cur = { ...cur, completedTasks: first ? [...cur.completedTasks, task.id] : cur.completedTasks, currentTask: cur.currentTask + 1, xpEarned: cur.xpEarned + gained };
+    if (first) completed.push(task.id);
   }
   return { run: cur, xp: totalXp, completed };
 }
@@ -122,8 +128,6 @@ function commit(state, ctx, { comms, run, extra = {} }) {
       communicationMode: comms.mode,
       brokerConfirmed: comms.confirmed,
       commsStats: comms.stats,
-      negotiatedLoadId: comms.confirmed ? cc.load.id : null,
-      agreedRate: comms.confirmed ? comms.negotiation.agreedRate : null,
       xp: res.xp,
       missionRuns: { ...state.missionRuns, [mission04.id]: res.run },
       ...extra,
@@ -144,8 +148,8 @@ export function startMission(state, ctx = getTruckContext()) {
 // ---- Broker list --------------------------------------------------------------------------
 
 export function selectBroker(state, brokerId, ctx = getTruckContext()) {
-  const { cc, comms, run, recentBrokerIds } = readComms(state, ctx);
-  if (!cc) return noop();
+  const { cc, comms, run, recentBrokerIds, finalized } = readComms(state, ctx);
+  if (!cc || finalized) return noop();
   // Before Start Mission a broker click does nothing: no validation, no "Correct", no reveal.
   if (!run.started) return noop({ tone: "hint", text: mission04.feedback.startFirst });
   const extra = { recentBrokerIds: addUnique([brokerId], recentBrokerIds).slice(0, 5) };
@@ -181,9 +185,9 @@ export function reviewDetails(state, ctx = getTruckContext()) {
 // A student message (typed or from a suggestion button). `channel` is "chat" or "call".
 // Returns { patch, message, coach, completed, broker: [reply lines] }.
 export function sendMessage(state, text, channel = "chat", ctx = getTruckContext()) {
-  const { cc, comms, run } = readComms(state, ctx);
+  const { cc, comms, run, finalized } = readComms(state, ctx);
   const clean = (text ?? "").trim();
-  if (!cc || !clean) return noop();
+  if (!cc || !clean || finalized) return noop();
   if (comms.selectedBrokerId !== cc.broker.id) return noop({ tone: "hint", text: mission04.feedback.needBroker });
 
   const { load, broker, analysis, vars } = cc;
@@ -309,7 +313,7 @@ export function getHelper(state, ctx = getTruckContext()) {
   return { suggestions, insights, questions: getSuggestedQuestions(vars), negotiationStatus: comms.negotiation.status };
 }
 
-// "Use AI Suggestion": a deterministic next-step message (training assistance, not a live AI).
+// "Suggest a message": a deterministic next-step message (training assistance, not a live AI).
 export function aiSuggestion(state, ctx = getTruckContext()) {
   const { cc, comms } = readComms(state, ctx);
   if (!cc) return null;
@@ -378,9 +382,39 @@ export function getSummary(state, ctx = getTruckContext()) {
   };
 }
 
+// ---- Practice: keep a deal or try another load ---------------------------------------------
+
+// KEEP THIS DEAL / FINALIZE LOAD: the only action that commits the mission result. Dispatch and
+// Tracking read negotiatedLoadId / agreedRate, which nothing else ever writes.
+export function finalizeLoad(state, ctx = getTruckContext()) {
+  const { cc, comms, run, finalized } = readComms(state, ctx);
+  if (!cc || !run.started || finalized) return noop();
+  if (comms.negotiation.status !== "agreed" || !comms.confirmed) return noop({ tone: "hint", text: mission04.feedback.notAgreed });
+  return {
+    patch: {
+      negotiatedLoadId: cc.load.id,
+      agreedRate: comms.negotiation.agreedRate,
+      loadFinalized: true,
+      finalizedBrokerId: cc.broker.id,
+      finalDecisionReasonIds: state.decisionReasonIds ?? [],
+    },
+    message: { tone: "success", text: mission04.feedback.finalized },
+    completed: [],
+  };
+}
+
+// TRY ANOTHER LOAD: archives this attempt (IDs and result only) and clears the candidate so Load
+// Analysis can pick another. XP, completed tasks and hints stay exactly as they were.
+export function tryAnotherLoad(state, ctx = getTruckContext()) {
+  const { cc, finalized } = readComms(state, ctx);
+  if (!cc || finalized) return noop();
+  return { patch: { ...leaveAttemptPatch(state), selectedBestLoadId: null, decisionReasonIds: [], candidateDecision: null }, completed: [] };
+}
+
 export function completeMission(state, ctx = getTruckContext()) {
-  const { cc, run } = readComms(state, ctx);
-  if (!cc || !run.started || run.completed || run.completedTasks.length < mission04.tasks.length) return { patch: {}, completed: false };
+  const { cc, run, finalized } = readComms(state, ctx);
+  // A mission result needs a finalized load as well as every task done.
+  if (!cc || !run.started || run.completed || !finalized || run.completedTasks.length < mission04.tasks.length) return { patch: {}, completed: false };
   const { stars, patch } = finishMission(state, {
     missionId: mission04.id,
     levelId: mission04.levelId,

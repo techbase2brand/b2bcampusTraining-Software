@@ -6,6 +6,7 @@ import { mission02 } from "@/data/phase3Missions";
 import { getTruckContext } from "@/lib/loadRules";
 import { getTaskVars, getAgentLine } from "@/lib/phase3Engine";
 import * as actions from "@/lib/phase3Actions";
+import { getBoardChecklist } from "@/lib/taskChecklists";
 import { getLoad } from "@/lib/loadSelectors";
 import { fillTemplate } from "@/lib/text";
 
@@ -33,6 +34,7 @@ export function usePhase3Mission() {
 
   return {
     mission: mission02,
+    checklist: getBoardChecklist(state),
     run,
     task,
     taskText: task ? fillTemplate(task.instruction, getTaskVars(ctx)) : null,
@@ -52,6 +54,7 @@ export function usePhase3Mission() {
     revealChecks: (loadId, codes) => dispatch(actions.revealChecks(state, loadId, codes, ctx)),
     shortlistLoad: (id) => dispatch(actions.shortlistLoad(state, id, ctx)),
     removeFromShortlist: (id) => dispatch(actions.removeFromShortlist(state, id, ctx)),
+    clearShortlist: () => dispatch(actions.clearShortlist(state, ctx)),
     requestHint: () => dispatch(actions.takeHint(state)),
     complete: () => dispatch(actions.completePhase3(state)),
     summary: () => actions.getPhase3Summary(state, ctx),

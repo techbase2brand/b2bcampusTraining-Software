@@ -18,6 +18,9 @@ export const simulationConfig = {
   fuel: { pricePerGallon: 3.9, milesPerGallon: 6.5 },
   operatingCostPerMile: 0.15, // maintenance, tires, insurance etc. (excludes fuel)
 
+  // Multi-dispatch: may one driver / truck serve several unfinished dispatches at once? (training default: yes)
+  allowDriverReuse: true,
+
   // Phase 3 shortlist limits
   shortlist: { min: 2, max: 3 },
 

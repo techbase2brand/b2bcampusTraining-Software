@@ -59,9 +59,14 @@ export default function DecisionReasonPanel({ m, onFinish }) {
 
       <div className="mt-3">
         {m.accepted ? (
-          <GameButton className="w-full" onClick={onFinish}>
-            Finish Analysis <ArrowRight className="size-4" aria-hidden="true" />
-          </GameButton>
+          <div className="space-y-2">
+            <GameButton className="w-full" onClick={onFinish}>
+              {m.run.completed ? selectionCopy.continueWith : "Complete Mission"} <ArrowRight className="size-4" aria-hidden="true" />
+            </GameButton>
+            <GameButton className="w-full" variant="ghost" onClick={m.compareAgain}>
+              {selectionCopy.tryAnother}
+            </GameButton>
+          </div>
         ) : (
           <GameButton className="w-full" onClick={() => m.submit(draft)}>
             {selectionCopy.submitReasons}

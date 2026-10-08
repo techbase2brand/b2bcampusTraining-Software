@@ -28,6 +28,11 @@ export default function ShortlistPanel({ m, highlight }) {
             </span>
             <span className={ready ? "text-success" : "text-gold-bright"}>{loads.length}</span> / {max} loads shortlisted
             <span className="font-normal normal-case text-ink-dim">(min {min})</span>
+            {loads.length > 0 && (
+              <button type="button" onClick={m.clearShortlist} className="rounded-md border border-line px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
+                Clear
+              </button>
+            )}
           </p>
         </div>
 

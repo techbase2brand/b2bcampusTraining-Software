@@ -7,6 +7,7 @@
 // -> driver-confirmed (driver accepted) -> ready-for-pickup (assignment confirmed). It stops there:
 // tracking belongs to Phase 7.
 
+import { isDriverAvailableForDispatch, isTruckAvailableForDispatch, dispatchHoldingDriver } from "./dispatchAvailability";
 import { mission05 } from "@/data/phase6Missions";
 import { assignmentStatuses, dispatchSheetFields, driverTopics } from "@/data/dispatchComms";
 import { callScript } from "@/data/brokerComms";
@@ -211,6 +212,10 @@ export function selectDriver(state, driverId) {
     const driverChecks = { ...d.driverChecks, [driverId]: addUnique(d.driverChecks[driverId] ?? [], failing) };
     const out = commit(state, { d: { ...d, driverChecks, viewedDriverIds: addUnique(d.viewedDriverIds, [driverId]) }, run: { ...run, attempts: run.attempts + 1 } });
     return { ...out, message: { tone: "error", text: verdict.firstFailure.message }, wrong: true };
+  }
+  if (!isDriverAvailableForDispatch(state, driverId, state.activeDispatchId) || !isTruckAvailableForDispatch(state, entry.truck.id, state.activeDispatchId)) {
+    const holder = dispatchHoldingDriver(state, driverId, state.activeDispatchId);
+    return noop({ tone: "error", text: `${entry.driver.name} is already assigned to ${holder ? `Dispatch #${String(holder.sequenceNumber).padStart(3, "0")}` : "another dispatch"}. Choose another driver.` });
   }
   const switched = d.selectedDriverId && d.selectedDriverId !== driverId;
   const next = {

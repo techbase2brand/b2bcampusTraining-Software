@@ -1,3 +1,5 @@
+import { features } from "@/data/features";
+
 // The single progression rule for sidebar items AND route guards.
 // Unlocks are CUMULATIVE: access depends on the highest level the student has reached, which only
 // ever increases, so finishing a later mission can never lock an earlier module again.
@@ -18,7 +20,8 @@ export function isNavUnlocked(item, state) {
 // Resolve a nav definition (data/navigation.js) against the saved progress.
 // Items without an unlockLevel keep their static status (preview / locked).
 export function resolveNav(items, state) {
-  return items.map((item) => {
+  // Items behind a feature flag (data/features.js) that is off are not offered to students.
+  return items.filter((item) => !item.feature || features[item.feature]).map((item) => {
     if (item.unlockLevel == null) return item;
     return { ...item, status: isNavUnlocked(item, state) ? "enabled" : "locked" };
   });

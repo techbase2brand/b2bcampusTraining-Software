@@ -30,14 +30,14 @@ function Panel({ title, action, children, className = "" }) {
 
 // Brand-new player (Mission 1 in progress): the guided welcome and task list lead.
 // After Mission 1 the operational control-center view is the main experience.
-export default function DispatcherDashboard({ m, onContinue, onNavigate }) {
+export default function DispatcherDashboard({ m, onContinue, onNavigate, onOpenRoute }) {
   const { state } = useGameProgress();
   const { mission, progress, task } = m;
   const total = mission.tasks.length;
   const done = progress.completedTasks.length;
   // Operational numbers come from the saved simulation (lib/dashboardStats.js), never from constants.
   const dash = getDashboard(state);
-  const liveRecord = dash.records.find((r) => r.live) ?? null;
+  const liveRecord = dash.records.find((r) => r.live && r.reference) ?? null;
 
   return (
     <div className="space-y-3.5">
@@ -56,10 +56,10 @@ export default function DispatcherDashboard({ m, onContinue, onNavigate }) {
               <p className="mt-1 text-sm text-ink-dim">Continue your journey to become a professional dispatcher.</p>
               <div className="mt-5 max-w-md rounded-xl border-l-4 border-l-success border-y border-r border-line bg-navy-950/75 p-4 backdrop-blur-sm">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-bold text-ink">Phase 1: Foundation</span>
+                  <span className="font-bold text-ink">Mission 1: Dispatcher Desk Setup</span>
                   <span className="font-semibold tabular-nums text-cyan-bright">{Math.round((done / total) * 100)}%</span>
                 </div>
-                <ProgressBar value={done} max={total} tone="success" label="Phase 1 progress" className="mt-2" />
+                <ProgressBar value={done} max={total} tone="success" label="Mission 1 progress" className="mt-2" />
                 <p className="mt-2 text-xs text-ink-dim">
                   {done} of {total} tasks completed
                 </p>
@@ -122,17 +122,17 @@ export default function DispatcherDashboard({ m, onContinue, onNavigate }) {
       ) : (
         <>
           <div className="grid items-start gap-3 xl:grid-cols-[1.6fr_1fr]">
-            <CurrentShipment current={dash.current} hasPending={dash.pending.length > 0} actions={dash.actions} onNavigate={onNavigate} />
+            <CurrentShipment current={dash.current} hasPending={dash.pending.length > 0} actions={dash.actions} onNavigate={onNavigate} onOpenRoute={onOpenRoute} />
             <div className="space-y-3">
               <TrackingSummary tracking={dash.tracking} />
-              <NeedsAttention items={dash.attention} onNavigate={onNavigate} />
+              <NeedsAttention items={dash.attention} onNavigate={onNavigate} onOpenRoute={onOpenRoute} />
             </div>
           </div>
 
-          <DispatchOverview records={dash.records} actions={dash.actions} onNavigate={onNavigate} />
+          <DispatchOverview records={dash.records} actions={dash.actions} onNavigate={onNavigate} onOpenRoute={onOpenRoute} />
 
           <div className="grid items-start gap-3 lg:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr]">
-            <RecentActivity events={dash.activity} context={liveRecord ? `${liveRecord.reference}${liveRecord.driverName ? ` · ${liveRecord.driverName}` : ""}` : null} />
+            <RecentActivity events={dash.activity} context={dash.dispatches > 1 ? `Across ${dash.dispatches} dispatches` : liveRecord ? `${liveRecord.reference}${liveRecord.driverName ? ` · ${liveRecord.driverName}` : ""}` : null} />
             <TrainingProgress progress={dash.progress} />
             <QuickActions actions={dash.actions} onNavigate={onNavigate} />
           </div>

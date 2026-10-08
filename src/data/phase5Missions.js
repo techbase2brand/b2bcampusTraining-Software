@@ -8,7 +8,7 @@ export const mission04 = {
   phaseId: "phase-5",
   title: "Broker Calling & Communication",
   intro:
-    "Contact the broker, verify load details, communicate professionally and negotiate the best possible rate for the load you selected.",
+    "Verify the load, contact the broker and negotiate the rate.",
   steps: ["Select Broker", "Review Load Details", "Communicate", "Negotiate Rate", "Confirm Agreement"],
 
   tasks: [
@@ -96,6 +96,7 @@ export const mission04 = {
     needBroker: "Select the broker for your load first.",
     needNegotiate: "Try negotiating before you confirm. Ask for a better rate and explain why.",
     notAgreed: "The broker has not agreed on a rate yet.",
+    finalized: "Deal locked in. It carries forward to Driver Assignment.",
     agreementConfirmed: "Agreement confirmed. The rate is agreed, but the load is not booked yet.",
     taskDone: "{title} complete.",
     extremeAsk: "That request is far above the posted rate. Brokers respect reasonable, justified requests, so ask for a realistic figure and say why.",
@@ -115,18 +116,11 @@ export const phase5Page = {
     { id: "recent", label: "Recent" },
     { id: "saved", label: "Saved" },
   ],
+  // Below lg: one panel at a time (Chat / Call share one workspace)
   panelTabs: [
     { id: "brokers", label: "Brokers" },
-    { id: "chat", label: "Chat" },
-    { id: "call", label: "Call" },
-    { id: "details", label: "Load" },
-    { id: "helper", label: "Helper" },
-  ],
-  // lg to 2xl: panels that sit under the chat row, switched by tabs
-  secondaryTabs: [
-    { id: "call", label: "Call" },
-    { id: "details", label: "Load Details" },
-    { id: "helper", label: "Negotiation Helper" },
+    { id: "chat", label: "Chat / Call" },
+    { id: "load", label: "Load & Rate" },
   ],
   workflow: [
     { id: "select", title: "Select a Broker" },

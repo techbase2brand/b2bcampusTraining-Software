@@ -37,7 +37,7 @@ export default function MissionComplete({ progress, accuracy, totalTasks, onRetu
         {/* Navigation only: completion is already saved, so neither button touches rewards. */}
         <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
           <GameButton onClick={onReturn} className="w-full">
-            Return to Level Map
+            Continue Training
           </GameButton>
           <GameButton variant="ghost" onClick={onDashboard} className="w-full border-cyan/60 text-cyan-bright">
             <LayoutDashboard className="size-4" aria-hidden="true" /> Go to Dashboard

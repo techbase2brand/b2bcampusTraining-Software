@@ -174,14 +174,14 @@ export const phase4CompletionMetrics = [
 
 // Page copy, flow strip and completion for Phase 4.
 export const phase4Page = {
-  eyebrow: "Phase 4",
+  eyebrow: "Mission 3",
   title: "Load Analysis & Matching",
   subtitle: "Compare your shortlisted loads, analyze rates and calculate profitability to choose the best load for your truck.",
   truckTitle: "Your Assigned Truck",
   shortlistTitle: "Shortlisted Loads",
   shortlistSub: "Analyze and compare these loads to find the best match for your truck.",
   flow: [
-    { id: "review", title: "Review Shortlisted Loads", text: "Check the loads you shortlisted in Phase 3." },
+    { id: "review", title: "Review Shortlisted Loads", text: "Check the loads you shortlisted on the Load Board." },
     { id: "factors", title: "Analyze Key Factors", text: "Check RPM, deadhead, total miles, fuel cost and estimated margin." },
     { id: "compare", title: "Compare Loads", text: "Use the comparison view to see which load makes the most sense." },
     { id: "route", title: "Check Route & Map", text: "View the route, deadhead distance and pickup / delivery locations." },
@@ -191,7 +191,7 @@ export const phase4Page = {
     title: "LOAD ANALYSIS COMPLETE",
     subtitle: "You compared your shortlist and selected a load for your truck.",
     unlocked: "Level 4: Broker Calling & Communication unlocked",
-    cta: "Next Phase: Broker Communication",
+    cta: "Next Mission: Broker Communication",
     secondary: "Return to Level Map",
   },
 };
@@ -232,14 +232,16 @@ export const questionFeedback = {
 
 // Copy for choosing, confirming and explaining the best load.
 export const selectionCopy = {
-  selectButton: "Select as Best Load",
-  confirmTitle: "Confirm your selection",
-  confirmNote: "This only selects your recommended candidate. It does not book the load.",
-  confirmButton: "CONFIRM SELECTION",
+  selectButton: "Choose This Load",
+  confirmTitle: "Choose this load?",
+  confirmNote: "This is only your current choice. You can change it any time before you lock in a deal with the broker.",
+  confirmButton: "CHOOSE LOAD",
   cancelButton: "Cancel",
   reasonsTitle: "Why did you choose this load?",
   reasonsHint: "Pick the reasons the numbers actually support.",
   informationalTitle: "Confirmed for every shortlisted load",
   submitReasons: "Submit decision",
   compareAgain: "COMPARE AGAIN",
+  tryAnother: "TRY ANOTHER LOAD",
+  continueWith: "Continue with This Load",
 };

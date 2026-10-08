@@ -155,7 +155,7 @@ export const phase3CompletionMetrics = [
 
 // Page copy for the Phase 3 header and the "how it works" strip.
 export const phase3Page = {
-  eyebrow: "Phase 3",
+  eyebrow: "Mission 2",
   title: "Load Board & Finding Loads",
   subtitle:
     "Search, filter and find the best loads for your truck. Learn to analyze lanes, equipment, rates and requirements.",

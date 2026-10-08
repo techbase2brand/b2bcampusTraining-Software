@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Phone, PhoneOff, Mic, MicOff, Grid3x3, Volume2, NotebookPen, Send, MessageSquare, Lock, ChevronUp, ArrowRight, Check } from "lucide-react";
+import { Phone, NotebookPen, Send, MessageSquare, Lock, ChevronUp, ArrowRight, Check } from "lucide-react";
 import { callScript } from "@/data/brokerComms";
 import { simulationConfig } from "@/data/simulationConfig";
 import { requiredTopicsFor } from "@/lib/driverChat";
@@ -9,18 +9,21 @@ import { topicLabels } from "@/lib/dispatchActions";
 import { formatTimer } from "@/lib/callSim";
 import { addMinutes, formatSimClock, parseSimTime } from "@/lib/text";
 import GameButton from "@/components/game/GameButton";
+import { orderChips, chipClass, chipLabel } from "@/lib/chipOrder";
+import CallControls from "@/components/game/CallControls";
+import { features } from "@/data/features";
+import GameDrawer from "@/components/game/GameDrawer";
 import TaskHighlight from "@/components/dispatcher/TaskHighlight";
 import BrokerAvatar from "@/components/brokers/BrokerAvatar";
 
 const CLOCK_START = parseSimTime(simulationConfig.clock.now);
 const VISIBLE_CHIPS = 4;
 const BARS = 14;
-const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
 const MODES = [
   { id: "chat", label: "Chat" },
   { id: "call", label: "Call" },
-  { id: "ai", label: "AI Call" },
-];
+  { id: "ai", label: "AI Call", feature: "aiCall" },
+].filter((x) => !x.feature || features[x.feature]);
 
 // Driver communication center: chat, a simulated call (no telephony) and a placeholder for the AI
 // call. Free text is mapped to topics by lib/driverChat.js; the driver's answers are deterministic.
@@ -29,6 +32,7 @@ export default function DriverCommsPanel({ m, highlight, draft, setDraft }) {
   const [mode, setMode] = useState("chat");
   const [popover, setPopover] = useState(false);
   const [say, setSay] = useState("");
+  const [notesOpen, setNotesOpen] = useState(false);
   const endRef = useRef(null);
   const { entry, neg, d, call } = m;
   const chat = d.messages.filter((x) => x.channel === "chat");
@@ -69,7 +73,7 @@ export default function DriverCommsPanel({ m, highlight, draft, setDraft }) {
     setSay("");
   };
 
-  const chips = m.helper?.suggestions ?? [];
+  const chips = orderChips(m.helper?.suggestions ?? [], m.checklist, d.topics);
   const shown = chips.slice(0, VISIBLE_CHIPS);
   const rest = chips.slice(VISIBLE_CHIPS);
   const dialing = call.status === "dialing";
@@ -88,7 +92,7 @@ export default function DriverCommsPanel({ m, highlight, draft, setDraft }) {
             <h2 className="truncate text-sm font-extrabold text-ink">{entry ? entry.driver.name : "No driver selected"}</h2>
             <p className="truncate text-[11px] text-ink-dim">{entry ? `${entry.truck.id} · ${entry.truck.equipment} · ${entry.driver.location}` : "Select a suitable driver to open a conversation."}</p>
           </div>
-          <div role="tablist" aria-label="Communication mode" className="grid grid-cols-3 gap-0.5 rounded-lg bg-navy-900 p-0.5 text-[11px] font-semibold">
+          <div role="tablist" aria-label="Communication mode" className={`grid ${MODES.length === 3 ? "grid-cols-3" : "grid-cols-2"} gap-0.5 rounded-lg bg-navy-900 p-0.5 text-xs font-semibold`}>
             {MODES.map((x) => (
               <button key={x.id} type="button" role="tab" aria-selected={mode === x.id} onClick={() => setMode(x.id)} className={`rounded-md px-2 py-1 ${mode === x.id ? "bg-blue text-white" : "text-ink-dim hover:text-ink"}`}>
                 {x.label}
@@ -104,7 +108,7 @@ export default function DriverCommsPanel({ m, highlight, draft, setDraft }) {
               {covered} / {required.length}
             </span>
           </p>
-          <ul className="mt-1 flex gap-1 overflow-x-auto pb-0.5">
+          <ul className="scroll-compact mt-1 flex gap-1 overflow-x-auto pb-0.5">
             {required.map((t) => {
               const done = d.topics.includes(t);
               return (
@@ -144,8 +148,8 @@ export default function DriverCommsPanel({ m, highlight, draft, setDraft }) {
             <div className="border-t border-line/70 px-2 pb-2 pt-2">
               <div className="relative mb-2 flex flex-wrap items-center gap-1.5">
                 {shown.map((q) => (
-                  <button key={q.id} type="button" disabled={!canTalk} onClick={() => m.send(q.text, "chat")} className="rounded-full border border-line bg-navy-900 px-2 py-0.5 text-[10px] text-ink transition-colors hover:border-cyan hover:text-cyan-bright disabled:opacity-40">
-                    {q.label}
+                  <button key={q.id} type="button" disabled={!canTalk} onClick={() => m.send(q.text, "chat")} className={chipClass(q)}>
+                    {chipLabel(q)}
                   </button>
                 ))}
                 {rest.length > 0 && (
@@ -166,7 +170,7 @@ export default function DriverCommsPanel({ m, highlight, draft, setDraft }) {
                           }}
                           className="w-full rounded-lg px-2 py-1.5 text-left text-xs text-ink transition-colors hover:bg-blue/20 disabled:opacity-40"
                         >
-                          {q.label}
+                          {chipLabel(q)}
                         </button>
                       </li>
                     ))}
@@ -206,7 +210,7 @@ export default function DriverCommsPanel({ m, highlight, draft, setDraft }) {
                   <p className={`text-xs font-bold ${connected ? "text-success" : dialing ? "text-gold-bright" : ended ? "text-danger" : "text-ink-dim"}`} aria-live="polite">
                     {ended ? "Call Ended" : live ? callScript.statusLabels[call.status] : "Ready"}
                   </p>
-                  {live && (
+                  {features.callExtras && live && (
                     <div className="mt-1.5 flex h-8 items-center justify-center gap-1" aria-hidden="true">
                       {Array.from({ length: BARS }, (_, i) => (
                         <span key={i} className={`w-1 rounded-full bg-cyan-bright ${connected && !call.muted ? "animate-pulse" : "opacity-30"}`} style={{ height: `${connected && !call.muted ? 30 + ((i * 37) % 70) : 20}%`, animationDelay: `${i * 90}ms` }} />
@@ -223,29 +227,7 @@ export default function DriverCommsPanel({ m, highlight, draft, setDraft }) {
 
                 {live ? (
                   <>
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {[
-                        ["mute", call.muted ? MicOff : Mic, "Mute", call.muted],
-                        ["keypad", Grid3x3, "Keypad", call.keypad],
-                        ["speaker", Volume2, "Speaker", call.speaker],
-                      ].map(([type, Icon, label, on]) => (
-                        <button key={type} type="button" onClick={() => m.toggleCall(type)} disabled={!connected} aria-pressed={on} className={`flex flex-col items-center gap-0.5 rounded-lg border py-1.5 text-[10px] font-semibold transition-colors disabled:opacity-40 ${on ? "border-cyan bg-cyan/15 text-cyan-bright" : "border-line bg-surface-2 text-ink"}`}>
-                          <Icon className="size-4" aria-hidden="true" /> {label}
-                        </button>
-                      ))}
-                      <button type="button" onClick={m.endCall} className="flex flex-col items-center gap-0.5 rounded-lg border border-danger/50 bg-danger/20 py-1.5 text-[10px] font-semibold text-danger transition-colors hover:bg-danger/30">
-                        <PhoneOff className="size-4" aria-hidden="true" /> End Call
-                      </button>
-                    </div>
-                    {call.keypad && (
-                      <div className="grid grid-cols-3 gap-1" aria-label="Keypad">
-                        {KEYS.map((k) => (
-                          <span key={k} className="rounded-md bg-surface-2 py-1 text-center text-xs font-semibold text-ink">
-                            {k}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    <CallControls call={call} connected={connected} onToggle={m.toggleCall} onEnd={m.endCall} />
                   </>
                 ) : (
                   <GameButton size="sm" onClick={m.startCall}>
@@ -256,7 +238,7 @@ export default function DriverCommsPanel({ m, highlight, draft, setDraft }) {
                 {(live || transcript.length > 0) && (
                   <div>
                     <p className="label-xs">{ended ? "Call transcript" : "Live transcript"}</p>
-                    <ul className="mt-1 max-h-40 space-y-1 overflow-y-auto rounded-lg border border-line/60 bg-navy-900/60 p-2" aria-live="polite">
+                    <ul className="scroll-compact mt-1 max-h-40 space-y-1 overflow-y-auto rounded-lg border border-line/60 bg-navy-900/60 p-2" aria-live="polite">
                       {transcript.length === 0 && <li className="text-[11px] text-ink-dim">{dialing ? "Connecting..." : "No speech yet."}</li>}
                       {transcript.map((t, i) => (
                         <li key={i} className="text-[11px] leading-snug">
@@ -275,6 +257,10 @@ export default function DriverCommsPanel({ m, highlight, draft, setDraft }) {
                   </div>
                 )}
 
+                <GameButton variant="ghost" size="sm" onClick={() => setNotesOpen(true)}>
+                  <NotebookPen className="size-3.5" aria-hidden="true" /> View Call Notes {m.notes.length > 0 && `(${m.notes.length})`}
+                </GameButton>
+                <GameDrawer open={notesOpen} onClose={() => setNotesOpen(false)} title="Call Notes" subtitle={`Call with ${entry.driver.name}`}>
                 <div>
                   <div className="flex items-center justify-between">
                     <p className="label-xs flex items-center gap-1">
@@ -297,6 +283,7 @@ export default function DriverCommsPanel({ m, highlight, draft, setDraft }) {
                     {d.notes.length && JSON.stringify(d.notes) === JSON.stringify(m.notes) ? "Notes Saved" : "Save Notes"}
                   </GameButton>
                 </div>
+                </GameDrawer>
               </>
             )}
           </div>

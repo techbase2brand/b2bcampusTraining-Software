@@ -41,6 +41,55 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+/* Themed scrollbars (global, so every page, panel, drawer, modal and table gets them).
+   Thin dark track, rounded muted-cyan thumb that brightens on hover and while dragging.
+   The thumb keeps a transparent border so it floats 2px inside the track and never touches a
+   rounded card edge. Add .scroll-compact for dense lists and chip rows (5px). */
+:root {
+  --sb-size: 7px;
+  --sb-track: rgb(5 20 35 / 0.35);
+  --sb-thumb: rgb(35 140 200 / 0.45);
+  --sb-thumb-hover: rgb(35 190 230 / 0.7);
+  --sb-thumb-active: rgb(35 210 255 / 0.85);
+}
+.scroll-compact {
+  --sb-size: 5px;
+}
+
+/* WebKit / Blink (Chrome, Edge, Safari) */
+*::-webkit-scrollbar {
+  width: var(--sb-size);
+  height: var(--sb-size);
+}
+*::-webkit-scrollbar-track {
+  background: var(--sb-track);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--sb-thumb);
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--sb-thumb-hover);
+}
+*::-webkit-scrollbar-thumb:active {
+  background-color: var(--sb-thumb-active);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox has no hover/active states. Newer Chromium also honours these properties and would then
+   ignore the rules above, so they are applied only where ::-webkit-scrollbar is unsupported. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--sb-thumb) transparent;
+  }
+}
+
 /* Cinematic backdrop: deep navy with soft cyan/blue glows and a faint grid */
 .game-backdrop {
   background:

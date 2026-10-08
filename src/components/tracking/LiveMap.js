@@ -26,7 +26,7 @@ export default function LiveMap({ m }) {
   const onLoaded = snap.leg === "loaded";
   return (
     <section aria-label="Live map" className="panel overflow-hidden">
-      <div className="relative aspect-video min-h-64 w-full">
+      <div className="relative aspect-video min-h-64 w-full lg:aspect-auto lg:h-[calc(100vh-24rem)] lg:min-h-[24rem]">
         <GameImage src="/images/levelmap-bg.png" alt="" sizes="60vw" className="absolute inset-0" fallback={<div className="game-grid absolute inset-0 bg-navy-900" />} />
         <div className="absolute inset-0 bg-navy-950/35" />
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
