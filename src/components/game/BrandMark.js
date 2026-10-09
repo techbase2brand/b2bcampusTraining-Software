@@ -9,7 +9,7 @@ export default function BrandMark({ subtitle = false, center = false, size = "md
         <Truck className={`${big ? "size-10" : "size-7"} text-cyan-bright`} aria-hidden="true" />
         <div className="leading-none">
           <p className={`font-black tracking-tight text-ink ${big ? "text-4xl" : "text-xl"}`}>B2B</p>
-          <p className={`font-semibold tracking-[0.25em] text-ink-dim ${big ? "text-[11px]" : "text-[8px]"}`}>
+          <p className={`font-semibold tracking-[0.25em] text-ink-dim ${big ? "text-[11px]" : "text-[11px]"}`}>
             LOGISTICS
           </p>
         </div>

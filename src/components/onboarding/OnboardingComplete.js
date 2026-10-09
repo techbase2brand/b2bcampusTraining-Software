@@ -8,7 +8,7 @@ export default function OnboardingComplete({ state, onFinish, onBack }) {
 
   return (
     <div className="mx-auto max-w-md text-center">
-      <span className="mx-auto grid size-20 place-items-center rounded-full border-2 border-success bg-success/10 shadow-[0_0_40px_rgb(0_200_150/0.4)]">
+      <span className="mx-auto grid size-20 place-items-center rounded-full border-2 app-border-success bg-success/10 shadow-[0_0_40px_rgb(0_200_150/0.4)]">
         <BadgeCheck className="size-10 text-success" aria-hidden="true" />
       </span>
       <h2 className="mt-5 text-3xl font-bold text-ink">Onboarding Complete!</h2>
@@ -17,7 +17,7 @@ export default function OnboardingComplete({ state, onFinish, onBack }) {
       </p>
 
       <div className="mt-8 space-y-3 text-left">
-        <div className="flex items-center gap-4 rounded-2xl border border-line bg-surface/90 p-4">
+        <div className="flex items-center gap-4 rounded-2xl app-border bg-surface/90 p-4">
           <Avatar gender={avatarSelection} className="size-14 shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="font-bold text-ink">{profile.name}</p>
@@ -31,7 +31,7 @@ export default function OnboardingComplete({ state, onFinish, onBack }) {
             <ProgressBar value={xp} max={nextLevelXp} label="XP" className="mt-1" />
           </div>
         </div>
-        <div className="flex items-center gap-4 rounded-2xl border border-gold/40 bg-surface/90 p-4">
+        <div className="flex items-center gap-4 rounded-2xl app-border app-border-warning bg-surface/90 p-4">
           <Trophy className="size-9 shrink-0 text-gold-bright" aria-hidden="true" />
           <div>
             <p className="font-bold text-gold-bright">Mission 1 Unlocked</p>

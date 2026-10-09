@@ -21,7 +21,7 @@ export default function AssignedTruckPanel() {
         <TruckThumb className="h-14 w-24 shrink-0 rounded-lg" />
         <div>
           <p className="text-lg font-extrabold leading-tight text-ink">{truck.id}</p>
-          <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold uppercase text-success">{truck.status}</span>
+          <span className="rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-bold uppercase text-success">{truck.status}</span>
         </div>
       </div>
       <dl className="mt-3 space-y-1.5">

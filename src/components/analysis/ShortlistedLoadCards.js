@@ -32,18 +32,18 @@ export default function ShortlistedLoadCards({ m, highlight }) {
                   type="button"
                   onClick={() => m.viewLoad(a.loadId)}
                   aria-pressed={active}
-                  className={`w-full rounded-xl border p-2.5 text-left transition-all duration-200 ${
-                    active ? "border-cyan-bright bg-cyan/10 shadow-[0_0_18px_rgb(37_217_255/0.2)]" : "border-line bg-navy-900/60 hover:border-cyan/50"
+                  className={`w-full rounded-xl app-border p-2.5 text-left transition-all duration-200 ${
+                    active ? "app-border-active bg-cyan/10 shadow-[0_0_18px_rgb(37_217_255/0.2)]" : " bg-navy-900/60 hover:border-cyan/50"
                   }`}
                 >
                   <span className="flex items-center justify-between gap-2">
                     <span className="text-sm font-bold text-ink">{load.referenceNumber}</span>
                     {best ? (
-                      <span className="rounded-full bg-success/20 px-2 py-0.5 text-[10px] font-bold text-success">SELECTED</span>
+                      <span className="rounded-full bg-success/20 px-2 py-0.5 text-[11px] font-bold text-success">SELECTED</span>
                     ) : viewed ? (
-                      <span className="flex items-center gap-0.5 text-[10px] font-semibold text-success"><Check className="size-3" aria-hidden="true" /> Reviewed</span>
+                      <span className="flex items-center gap-0.5 text-[11px] font-semibold text-success"><Check className="size-3" aria-hidden="true" /> Reviewed</span>
                     ) : (
-                      <span className="flex items-center gap-0.5 text-[10px] text-ink-dim"><Eye className="size-3" aria-hidden="true" /> Open</span>
+                      <span className="flex items-center gap-0.5 text-[11px] text-ink-dim"><Eye className="size-3" aria-hidden="true" /> Open</span>
                     )}
                   </span>
                   <span className="mt-2 flex gap-2.5">

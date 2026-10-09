@@ -17,7 +17,7 @@ export default function ComparisonTable({ m, highlight }) {
         <caption className="sr-only">Load analysis comparison</caption>
         <thead>
           <tr>
-            <th scope="col" className="border-b border-line bg-navy-900 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-ink-dim">
+            <th scope="col" className="border-b border-line bg-navy-900 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-ink-dim">
               Metrics
             </th>
             {analyses.map((a) => (
@@ -45,7 +45,7 @@ export default function ComparisonTable({ m, highlight }) {
                           ))}
                         </span>
                       ) : (
-                        <span className="text-[10px] font-normal text-ink-dim">Revealed after your decision</span>
+                        <span className="text-[11px] font-normal text-ink-dim">Revealed after your decision</span>
                       )
                     ) : (
                       formatMetric(row.format, valueFor(row.key, a))

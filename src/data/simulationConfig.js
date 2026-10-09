@@ -18,6 +18,18 @@ export const simulationConfig = {
   fuel: { pricePerGallon: 3.9, milesPerGallon: 6.5 },
   operatingCostPerMile: 0.15, // maintenance, tires, insurance etc. (excludes fuel)
 
+  // Automatic tracker: shipment movement follows real elapsed time, compressed.
+  //   simulationMinutesPerRealMinute 12  =>  60 simulation min = 5 real min, 120 = 10, 180 = 15
+  //   realMinutes = simulationMinutes / simulationMinutesPerRealMinute
+  // The saved segment start time is the source of truth; tickMs only refreshes the screen.
+  trackingTimeScale: {
+    simulationMinutesPerRealMinute: 12,
+    maxRealMinutesPerSegment: null, // optional cap per movement segment (null = no cap)
+    tickMs: 1000,
+    // Driver reports progress when a leg passes these fractions (plus trip start and arrival).
+    driverUpdateThresholds: [0.25, 0.5, 0.75, 0.9],
+  },
+
   // Multi-dispatch: may one driver / truck serve several unfinished dispatches at once? (training default: yes)
   allowDriverReuse: true,
 

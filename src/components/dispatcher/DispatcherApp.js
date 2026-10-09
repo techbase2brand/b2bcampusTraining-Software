@@ -84,13 +84,13 @@ function DispatcherWorkspace() {
 
   const sidebarFull = (
     <div className="flex h-full flex-col">
-      <div className="p-4">
+      <div className="liquid-border liquid-border-subtle m-3 rounded-xl p-3">
         <BrandMark />
         <p className="mt-2 text-xs text-ink-dim">Dispatcher Training</p>
       </div>
       {sidebar}
       <div className="mt-auto p-3">
-        <div className="rounded-xl border border-line bg-surface p-3">
+        <div className="rounded-xl app-border bg-surface p-3">
           <p className="text-xs text-ink-dim">Your Progress</p>
           <p className="text-sm font-bold text-ink">Level {state.currentLevel}</p>
           <ProgressBar value={pct} max={100} tone="success" label="Mission progress" className="mt-2" />
@@ -101,7 +101,7 @@ function DispatcherWorkspace() {
   );
 
   const search = features.globalSearch ? (
-    <div className="hidden max-w-xl items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm text-ink-dim sm:flex">
+    <div className="hidden max-w-xl items-center gap-2 rounded-xl app-border bg-surface px-4 py-2.5 text-sm text-ink-dim sm:flex">
       <Search className="size-4 shrink-0" aria-hidden="true" />
       <span className="truncate">Search loads, trucks, drivers... (Ctrl + K)</span>
     </div>
@@ -109,7 +109,7 @@ function DispatcherWorkspace() {
 
   return (
     <div className="game-backdrop flex min-h-screen">
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 border-r border-line bg-navy-900/80 lg:block">
+      <aside className="app-sidebar sticky top-0 hidden h-dvh shrink-0 border-r border-line bg-navy-900/80 lg:block">
         {sidebarFull}
       </aside>
 
@@ -121,7 +121,7 @@ function DispatcherWorkspace() {
             className="absolute inset-0 bg-navy-950/70"
             onClick={() => setDrawer(false)}
           />
-          <div className="relative h-full w-64 border-r border-line bg-navy-900">
+          <div className="relative h-full w-[min(18rem,85vw)] border-r border-line bg-navy-900">
             <button
               type="button"
               aria-label="Close menu"
@@ -143,7 +143,7 @@ function DispatcherWorkspace() {
                 type="button"
                 onClick={() => setDrawer(true)}
                 aria-label="Open menu"
-                className="grid size-9 shrink-0 place-items-center rounded-lg border border-line bg-surface text-ink lg:hidden"
+                className="grid size-9 shrink-0 place-items-center rounded-lg app-border bg-surface text-ink lg:hidden"
               >
                 <Menu className="size-4" aria-hidden="true" />
               </button>
@@ -152,7 +152,7 @@ function DispatcherWorkspace() {
           }
         />
         <div className="flex flex-1">
-          <main className="game-grid min-w-0 flex-1 p-4 sm:p-6">
+          <main className="game-grid page-in app-page min-w-0 flex-1">
             {view.section === "dashboard" && (
               <DispatcherDashboard m={m} onContinue={continueMission} onNavigate={navigate} onOpenRoute={(route) => router.push(route)} onOpenTruck={openTruck} />
             )}

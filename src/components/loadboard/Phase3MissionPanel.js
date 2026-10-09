@@ -30,17 +30,17 @@ export default function Phase3MissionPanel({ m }) {
             <li
               key={t.id}
               aria-current={current ? "step" : undefined}
-              className={`rounded-lg border px-2.5 py-1.5 transition-all duration-300 ${
+              className={`rounded-lg app-border px-2.5 py-1.5 transition-all duration-300 ${
                 current
-                  ? "border-cyan/60 bg-cyan/10 shadow-[0_0_16px_rgb(32_199_232/0.2)]"
+                  ? "app-border-active bg-cyan/10 shadow-[0_0_16px_rgb(32_199_232/0.2)]"
                   : isDone
-                    ? "border-success/25 bg-success/5"
-                    : "border-line/60 bg-navy-900/50"
+                    ? "app-border-success bg-success/5"
+                    : "app-border-subtle bg-navy-900/50"
               }`}
             >
               <div className="flex items-center gap-2">
                 <span
-                  className={`grid size-5 shrink-0 place-items-center rounded-full text-[10px] font-bold tabular-nums ${
+                  className={`grid size-5 shrink-0 place-items-center rounded-full text-[11px] font-bold tabular-nums ${
                     isDone ? "bg-success text-navy-950" : current ? "bg-cyan-bright text-navy-950" : "bg-surface-2 text-ink-dim"
                   }`}
                 >

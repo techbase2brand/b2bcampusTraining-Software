@@ -11,7 +11,7 @@ import { Star } from "lucide-react";
 
 function Stat({ label, value }) {
   return (
-    <div className="rounded-lg border border-line/60 bg-navy-900/60 px-3 py-2">
+    <div className="rounded-lg app-border app-border-subtle bg-navy-900/60 px-3 py-2">
       <dt className="label-xs">{label}</dt>
       <dd className="text-sm font-extrabold tabular-nums text-ink">{value}</dd>
     </div>
@@ -36,8 +36,8 @@ export default function AnalysisTabs({ m, highlight, tab, onTab }) {
             role="tab"
             aria-selected={active === t.id}
             onClick={() => setTab(t.id)}
-            className={`rounded-t-lg border border-b-0 px-3.5 py-2 text-xs font-semibold transition-colors ${
-              active === t.id ? "border-blue bg-blue text-white" : "border-line bg-surface/70 text-ink-dim hover:text-ink"
+            className={`rounded-t-lg app-border border-b-0 px-3.5 py-2 text-xs font-semibold transition-colors ${
+              active === t.id ? "app-border-active bg-blue text-white" : " bg-surface/70 text-ink-dim hover:text-ink"
             }`}
           >
             {t.label}
@@ -94,7 +94,7 @@ export default function AnalysisTabs({ m, highlight, tab, onTab }) {
               <Stat label="MC Number" value={b.mcNumber} />
               <Stat label="Payment Terms" value={b.paymentTerms} />
               <Stat label="Average Response" value={b.avgResponse} />
-              <div className="rounded-lg border border-line/60 bg-navy-900/60 px-3 py-2">
+              <div className="rounded-lg app-border app-border-subtle bg-navy-900/60 px-3 py-2">
                 <dt className="label-xs">Rating</dt>
                 <dd className="flex items-center gap-1 text-sm font-extrabold text-ink">
                   <Star className="size-3.5 fill-gold-bright text-gold-bright" aria-hidden="true" /> {b.rating} ({b.reviewCount} reviews)

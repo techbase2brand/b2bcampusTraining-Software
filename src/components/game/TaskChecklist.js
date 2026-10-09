@@ -17,7 +17,7 @@ export default function TaskChecklist({ checklist, className = "" }) {
       <ul className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
         {checklist.items.map((i) => (
           <li key={i.id} className={`flex items-center gap-1.5 text-sm ${i.done ? "font-semibold text-success" : "text-ink-dim"}`}>
-            {i.done ? <Check className="size-4 shrink-0" aria-hidden="true" /> : <Circle className="size-3.5 shrink-0" aria-hidden="true" />}
+            {i.done ? <Check className="check-pop size-4 shrink-0" aria-hidden="true" /> : <Circle className="size-3.5 shrink-0" aria-hidden="true" />}
             <span className="sr-only">{i.done ? "Done: " : "To do: "}</span>
             {i.label}
           </li>

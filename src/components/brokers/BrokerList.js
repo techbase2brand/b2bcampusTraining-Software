@@ -40,7 +40,7 @@ export default function BrokerList({ m, highlight }) {
           ))}
         </div>
 
-        <label className="mt-2.5 flex items-center gap-2 rounded-lg border border-line bg-navy-900 px-2.5 py-1.5 text-xs text-ink-dim focus-within:border-cyan">
+        <label className="mt-2.5 flex items-center gap-2 rounded-lg app-border bg-navy-900 px-2.5 py-1.5 text-xs text-ink-dim focus-within:border-cyan">
           <Search className="size-3.5 shrink-0" aria-hidden="true" />
           <input
             value={query}
@@ -51,7 +51,7 @@ export default function BrokerList({ m, highlight }) {
           />
         </label>
 
-        {!m.run.started && <p className="mt-2 rounded-md bg-gold/10 px-2 py-1.5 text-[10px] text-ink-dim">Start the mission to choose a broker.</p>}
+        {!m.run.started && <p className="mt-2 rounded-md bg-gold/10 px-2 py-1.5 text-[11px] text-ink-dim">Start the mission to choose a broker.</p>}
         <ul className="mt-2 min-h-0 flex-1 space-y-1 overflow-y-auto pr-0.5">
           {visible.map((b) => {
             const active = m.viewBrokerId === b.id;
@@ -64,15 +64,15 @@ export default function BrokerList({ m, highlight }) {
                   onClick={() => m.selectBroker(b.id)}
                   disabled={!m.run.started}
                   aria-pressed={active}
-                  className={`flex w-full items-center gap-2 rounded-lg border px-2 py-1.5 pr-7 text-left transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-70 ${
-                    active ? "border-cyan-bright bg-cyan/10 shadow-[0_0_12px_rgb(37_217_255/0.18)]" : "border-line/70 bg-navy-900/60 enabled:hover:border-cyan/50"
+                  className={`flex w-full items-center gap-2 rounded-lg app-border px-2 py-1.5 pr-7 text-left transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-70 ${
+                    active ? "liquid-border liquid-border--active app-border-active bg-cyan/10 shadow-[0_0_12px_rgb(37_217_255/0.18)]" : " bg-navy-900/60 enabled:hover:border-cyan/50"
                   }`}
                 >
                   <BrokerAvatar broker={b} className="size-8 text-xs" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-bold leading-tight text-ink">{b.name}</span>
-                    <span className="block truncate text-[10px] text-ink-dim">{formatLocation(b.locationId)}</span>
-                    <span className="flex items-center gap-1.5 text-[10px] text-ink-dim">
+                    <span className="block truncate text-[11px] text-ink-dim">{formatLocation(b.locationId)}</span>
+                    <span className="flex items-center gap-1.5 text-[11px] text-ink-dim">
                       <span className="flex items-center gap-0.5 font-semibold text-ink">
                         <Star className="size-3 fill-gold-bright text-gold-bright" aria-hidden="true" /> {b.rating}
                       </span>
@@ -95,7 +95,7 @@ export default function BrokerList({ m, highlight }) {
               </li>
             );
           })}
-          {visible.length === 0 && <li className="rounded-lg border border-dashed border-line p-4 text-center text-xs text-ink-dim">No brokers match.</li>}
+          {visible.length === 0 && <li className="rounded-lg app-border border-dashed p-4 text-center text-xs text-ink-dim">No brokers match.</li>}
         </ul>
       </section>
     </TaskHighlight>

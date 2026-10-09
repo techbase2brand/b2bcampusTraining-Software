@@ -8,6 +8,7 @@ export const features = {
   aiAssistant: false, // AI Assistant module and the "AI Assistant" tab inside Load Analysis (fixed preview text)
   aiCall: false, // "AI Call" tab / "AI-assisted call" note: locked placeholder
   callExtras: false, // waveform, mute, keypad, speaker: purely cosmetic, no effect on the simulation
+  devTrackingControls: process.env.NODE_ENV !== "production", // "Skip to next event" for testing; never shown in production builds
   coins: false, // coins have no use yet (the saved value is kept)
   streak: false, // streak has no behaviour yet (the saved value is kept)
 };

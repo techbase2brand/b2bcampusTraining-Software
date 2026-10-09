@@ -3,7 +3,7 @@ import GameImage from "./GameImage";
 
 // Student portrait. Falls back to an icon until /images/avatar-{gender}.png exists.
 // This is also the swap point for a future 3D avatar.
-export default function Avatar({ gender, className = "size-10", ring = "border-cyan" }) {
+export default function Avatar({ gender, className = "size-10", ring = "app-border-active" }) {
   const g = gender ?? "male";
   const tone = g === "female" ? "from-gold/40" : "from-blue/40";
   return (

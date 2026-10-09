@@ -5,6 +5,7 @@ import { Phone, NotebookPen, Send, MessageSquare, Lock, ChevronUp } from "lucide
 import { callScript } from "@/data/brokerComms";
 import { formatTimer } from "@/lib/callSim";
 import GameButton from "@/components/game/GameButton";
+import { scrollToLatest } from "@/lib/chatScroll";
 import CallControls from "@/components/game/CallControls";
 import { features } from "@/data/features";
 import TaskHighlight from "@/components/dispatcher/TaskHighlight";
@@ -25,7 +26,7 @@ export default function TrackingComms({ m }) {
   const [popover, setPopover] = useState(false);
   const [draft, setDraft] = useState("");
   const [say, setSay] = useState("");
-  const endRef = useRef(null);
+  const logRef = useRef(null);
   const { entry, call, t, run } = m;
   const chat = t.messages.filter((x) => x.channel === "chat");
   const transcript = t.messages.filter((x) => x.channel === "call");
@@ -33,7 +34,7 @@ export default function TrackingComms({ m }) {
   const first = entry.driver.name.split(" ")[0];
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
+    scrollToLatest(logRef.current);
   }, [chat.length, mode]);
 
   const submit = (e) => {
@@ -61,12 +62,12 @@ export default function TrackingComms({ m }) {
 
   return (
     <TaskHighlight active={m.highlight === "comms"}>
-      <section aria-label="Driver communication" className="panel flex h-[28rem] flex-col overflow-hidden">
+      <section aria-label="Driver communication" className="panel flex h-[clamp(20rem,52dvh,28rem)] flex-col overflow-hidden">
         <header className="flex items-center gap-2.5 border-b border-line/70 px-3 py-2">
           <BrokerAvatar broker={entry.driver} className="size-9 text-xs" />
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-extrabold text-ink">{entry.driver.name}</h2>
-            <p className="truncate text-[10px] text-ink-dim">
+            <p className="truncate text-[11px] text-ink-dim">
               {entry.truck.id} · Check calls: <span className="font-semibold text-cyan-bright">{t.checkCalls.length}</span>
             </p>
           </div>
@@ -81,7 +82,7 @@ export default function TrackingComms({ m }) {
 
         {mode === "chat" && (
           <>
-            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3 py-2.5" role="log" aria-live="polite" aria-label="Conversation">
+            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3 py-2.5" ref={logRef} role="log" aria-live="polite" aria-label="Conversation">
               {chat.length === 0 && (
                 <div className="grid h-full place-items-center text-center">
                   <div>
@@ -91,31 +92,30 @@ export default function TrackingComms({ m }) {
                 </div>
               )}
               {chat.map((msg, i) => {
-                if (msg.from === "system") return <p key={i} className="text-center text-[10px] font-semibold uppercase tracking-wide text-ink-dim">{msg.text}</p>;
+                if (msg.from === "system") return <p key={i} className="text-center text-[11px] font-semibold uppercase tracking-wide text-ink-dim">{msg.text}</p>;
                 const mine = msg.from === "dispatcher";
                 return (
-                  <div key={i} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                    <p className={`inline-block max-w-[82%] rounded-2xl px-3 py-1.5 text-left text-[13px] leading-snug ${mine ? "rounded-br-sm bg-blue text-white" : "rounded-bl-sm border border-line bg-surface-2 text-ink"}`}>{msg.text}</p>
+                  <div key={i} className={`msg-in flex ${mine ? "justify-end" : "justify-start"}`}>
+                    <p className={`inline-block max-w-[82%] rounded-2xl px-3 py-1.5 text-left text-[13px] leading-snug ${mine ? "rounded-br-sm bubble-me" : "rounded-bl-sm bubble-them text-ink"}`}>{msg.text}</p>
                   </div>
                 );
               })}
-              <div ref={endRef} />
             </div>
 
             <div className="border-t border-line/70 px-2 pb-2 pt-2">
               <div className="relative mb-2 flex flex-wrap items-center gap-1.5">
                 {shown.map((q) => (
-                  <button key={q.id} type="button" disabled={!canTalk} onClick={() => m.send(q.text, "chat")} className="rounded-full border border-line bg-navy-900 px-2 py-0.5 text-[10px] text-ink transition-colors hover:border-cyan hover:text-cyan-bright disabled:opacity-40">
+                  <button key={q.id} type="button" disabled={!canTalk} onClick={() => m.send(q.text, "chat")} className="rounded-full app-border bg-navy-900 px-2 py-0.5 text-[11px] text-ink transition-colors hover:border-cyan hover:text-cyan-bright disabled:opacity-40">
                     {q.label}
                   </button>
                 ))}
                 {rest.length > 0 && (
-                  <button type="button" onClick={() => setPopover((v) => !v)} aria-expanded={popover} aria-haspopup="true" className="flex items-center gap-0.5 rounded-full border border-cyan/40 bg-cyan/10 px-2 py-0.5 text-[10px] font-semibold text-cyan-bright">
+                  <button type="button" onClick={() => setPopover((v) => !v)} aria-expanded={popover} aria-haspopup="true" className="flex items-center gap-0.5 rounded-full app-border app-border-active bg-cyan/10 px-2 py-0.5 text-[11px] font-semibold text-cyan-bright">
                     +{rest.length} more <ChevronUp className={`size-3 transition-transform ${popover ? "" : "rotate-180"}`} aria-hidden="true" />
                   </button>
                 )}
                 {popover && (
-                  <ul className="absolute bottom-full left-0 z-20 mb-1 w-64 max-w-full space-y-0.5 rounded-xl border border-line bg-surface-2 p-1.5 shadow-[0_10px_30px_rgb(0_0_0/0.5)]">
+                  <ul className="absolute bottom-full left-0 z-20 mb-1 w-64 max-w-full space-y-0.5 rounded-xl app-border bg-surface-2 p-1.5 shadow-[0_10px_30px_rgb(0_0_0/0.5)]">
                     {rest.map((q) => (
                       <li key={q.id}>
                         <button
@@ -134,8 +134,8 @@ export default function TrackingComms({ m }) {
                   </ul>
                 )}
               </div>
-              <form onSubmit={submit} className="flex items-center gap-2">
-                <input value={draft} onChange={(e) => setDraft(e.target.value)} disabled={!canTalk} aria-label="Type your message" placeholder={canTalk ? "Type your message..." : "Start the mission to chat"} className="h-9 min-w-0 flex-1 rounded-lg border border-line bg-navy-900 px-3 text-sm text-ink outline-none transition-colors placeholder:text-ink-dim/70 focus:border-cyan focus:ring-1 focus:ring-cyan/40 disabled:opacity-50" />
+              <form onSubmit={submit} className="liquid-border liquid-on-focus flex items-center gap-2 rounded-xl">
+                <input value={draft} onChange={(e) => setDraft(e.target.value)} disabled={!canTalk} aria-label="Type your message" placeholder={canTalk ? "Type your message..." : "Start the mission to chat"} className="h-9 min-w-0 flex-1 rounded-lg app-border bg-navy-900 px-3 text-sm text-ink outline-none transition-colors placeholder:text-ink-dim/70 focus:border-cyan focus:ring-1 focus:ring-cyan/40 disabled:opacity-50" />
                 <button type="submit" disabled={!canTalk || !draft.trim()} aria-label="Send message" className="grid size-9 place-items-center rounded-lg bg-blue text-white transition hover:brightness-110 disabled:opacity-40">
                   <Send className="size-4" aria-hidden="true" />
                 </button>
@@ -160,7 +160,7 @@ export default function TrackingComms({ m }) {
               )}
               {(connected || ended) && (
                 <p className="mt-1 font-mono text-lg font-bold tabular-nums text-ink" aria-label={ended ? "Call duration" : "Call timer"}>
-                  {ended && <span className="mr-1.5 font-sans text-[10px] font-semibold uppercase text-ink-dim">Duration</span>}
+                  {ended && <span className="mr-1.5 font-sans text-[11px] font-semibold uppercase text-ink-dim">Duration</span>}
                   {formatTimer(call.seconds)}
                 </p>
               )}
@@ -179,7 +179,7 @@ export default function TrackingComms({ m }) {
             {(live || transcript.length > 0) && (
               <div>
                 <p className="label-xs">{ended ? "Call transcript" : "Live transcript"}</p>
-                <ul className="mt-1 max-h-32 space-y-1 overflow-y-auto rounded-lg border border-line/60 bg-navy-900/60 p-2" aria-live="polite">
+                <ul className="mt-1 max-h-32 space-y-1 overflow-y-auto rounded-lg app-border app-border-subtle bg-navy-900/60 p-2" aria-live="polite">
                   {transcript.length === 0 && <li className="text-[11px] text-ink-dim">{dialing ? "Connecting..." : "No speech yet."}</li>}
                   {transcript.map((x, i) => (
                     <li key={i} className="text-[11px] leading-snug">
@@ -189,7 +189,7 @@ export default function TrackingComms({ m }) {
                 </ul>
                 {connected && (
                   <form onSubmit={speak} className="mt-1.5 flex gap-1.5">
-                    <input value={say} onChange={(e) => setSay(e.target.value)} aria-label="Say on the call" placeholder="Say something..." className="h-8 min-w-0 flex-1 rounded-md border border-line bg-navy-900 px-2 text-xs text-ink outline-none focus:border-cyan" />
+                    <input value={say} onChange={(e) => setSay(e.target.value)} aria-label="Say on the call" placeholder="Say something..." className="h-8 min-w-0 flex-1 rounded-md app-border bg-navy-900 px-2 text-xs text-ink outline-none focus:border-cyan" />
                     <GameButton type="submit" size="sm" disabled={!say.trim()}>
                       Say
                     </GameButton>

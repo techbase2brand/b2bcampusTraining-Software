@@ -18,7 +18,7 @@ const taskMeta = {
 
 function Panel({ title, action, children, className = "" }) {
   return (
-    <section className={`rounded-2xl border border-line bg-surface/90 p-4 ${className}`}>
+    <section className={`rounded-2xl app-border bg-surface/90 p-4 ${className}`}>
       <div className="flex items-center justify-between">
         <h2 className="font-bold text-ink">{title}</h2>
         {action}
@@ -42,7 +42,7 @@ export default function DispatcherDashboard({ m, onContinue, onNavigate, onOpenR
   return (
     <div className="space-y-3.5">
       {task ? (
-        <section className="relative overflow-hidden rounded-2xl border border-line bg-navy-900">
+        <section className="relative overflow-hidden rounded-2xl app-border bg-navy-900">
           <GameImage
             src="/images/login-truck.png"
             alt=""
@@ -69,7 +69,7 @@ export default function DispatcherDashboard({ m, onContinue, onNavigate, onOpenR
               </div>
             </div>
             <div className="flex items-end justify-end gap-2">
-              <div className="rounded-2xl border border-cyan/25 bg-navy-950/80 p-4 text-sm backdrop-blur-sm sm:max-w-xs">
+              <div className="rounded-2xl app-border app-border-subtle bg-navy-950/80 p-4 text-sm backdrop-blur-sm sm:max-w-xs">
                 <p className="font-bold text-ink">Training Agent</p>
                 <p className="mt-2 text-ink-dim">
                   Your next task is <span className="font-semibold text-ink">&quot;{task.title}&quot;</span>. {task.instruction}
@@ -100,7 +100,7 @@ export default function DispatcherDashboard({ m, onContinue, onNavigate, onOpenR
               const isDone = progress.completedTasks.includes(t.id);
               const current = i === progress.currentTask && !progress.completed;
               return (
-                <li key={t.id} className={`flex items-center gap-3 rounded-xl border p-2.5 ${current ? "border-cyan bg-surface-2" : "border-line bg-navy-900/60"}`}>
+                <li key={t.id} className={`flex items-center gap-3 rounded-xl app-border p-2.5 ${current ? "app-border-active bg-surface-2" : " bg-navy-900/60"}`}>
                   <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${meta.tone}`}>
                     <Icon className="size-4" aria-hidden="true" />
                   </span>

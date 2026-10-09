@@ -9,7 +9,7 @@ import { homeFor } from "@/lib/routes";
 import GameButton from "@/components/game/GameButton";
 
 const inputClass =
-  "w-full rounded-lg border border-line bg-navy-900 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-dim/60 focus:border-cyan focus:outline-none focus:ring-2 focus:ring-cyan/30";
+  "w-full rounded-lg app-border bg-navy-900 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-dim/60 focus:border-cyan focus:outline-none focus:ring-2 focus:ring-cyan/30";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -86,12 +86,12 @@ export default function LoginForm() {
       </div>
 
       {forgot && (
-        <p className="rounded-lg border border-line bg-navy-900 p-3 text-xs text-ink-dim">
+        <p className="rounded-lg app-border bg-navy-900 p-3 text-xs text-ink-dim">
           Password reset is not available in the development build.
         </p>
       )}
       {error && (
-        <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-3 text-sm text-danger">
+        <p role="alert" className="rounded-lg app-border app-border-error bg-danger/10 p-3 text-sm text-danger">
           {error}
         </p>
       )}
@@ -102,7 +102,7 @@ export default function LoginForm() {
       <p className="text-center text-xs text-ink-dim">
         New here? Contact your training coordinator
       </p>
-      <p className="text-center text-[10px] text-ink-dim/70">
+      <p className="text-center text-[11px] text-ink-dim/70">
         Dev build: any valid email or Student ID with a 4+ character password works.
       </p>
     </form>

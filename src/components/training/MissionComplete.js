@@ -11,12 +11,13 @@ export default function MissionComplete({ progress, accuracy, totalTasks, onRetu
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-navy-950/90 p-4 backdrop-blur">
-      <div className="animate-fade-up w-full max-w-md rounded-3xl border border-success/50 bg-surface-2 p-8 text-center">
+      <div className="modal-in glass-strong liquid-border w-full max-w-md rounded-3xl p-8 text-center">
         <div className="flex justify-center gap-1" role="img" aria-label={`${progress.starsEarned} of 3 stars`}>
           {[1, 2, 3].map((n) => (
             <Star
               key={n}
-              className={`size-10 ${n <= progress.starsEarned ? "fill-gold-bright text-gold-bright" : "text-line"}`}
+              className={`star-in size-10 ${n <= progress.starsEarned ? "fill-gold-bright text-gold-bright" : "text-line"}`}
+              style={{ animationDelay: `${n * 140}ms` }}
               aria-hidden="true"
             />
           ))}
@@ -24,7 +25,7 @@ export default function MissionComplete({ progress, accuracy, totalTasks, onRetu
         <h1 className="mt-4 text-3xl font-extrabold text-ink">MISSION COMPLETE</h1>
         <p className="mt-1 font-medium text-success">Dispatcher Desk Ready</p>
 
-        <dl className="mt-6 space-y-3 rounded-2xl border border-line bg-surface p-5 text-left">
+        <dl className="mt-6 space-y-3 rounded-2xl app-border bg-surface p-5 text-left">
           {rows.map(([label, value]) => (
             <div key={label} className="flex justify-between">
               <dt className="text-sm text-ink-dim">{label}</dt>
@@ -39,7 +40,7 @@ export default function MissionComplete({ progress, accuracy, totalTasks, onRetu
           <GameButton onClick={onReturn} className="w-full">
             Continue Training
           </GameButton>
-          <GameButton variant="ghost" onClick={onDashboard} className="w-full border-cyan/60 text-cyan-bright">
+          <GameButton variant="ghost" onClick={onDashboard} className="w-full app-border-active text-cyan-bright">
             <LayoutDashboard className="size-4" aria-hidden="true" /> Go to Dashboard
           </GameButton>
         </div>

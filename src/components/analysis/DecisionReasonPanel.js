@@ -29,7 +29,7 @@ export default function DecisionReasonPanel({ m, onFinish }) {
       <ul className="mt-2.5 space-y-1.5">
         {selectable.map((r) => (
           <li key={r.id}>
-            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-line/60 bg-navy-900/60 px-2.5 py-1.5 text-xs text-ink transition-colors hover:border-cyan/50">
+            <label className="flex cursor-pointer items-center gap-2 rounded-lg app-border app-border-subtle bg-navy-900/60 px-2.5 py-1.5 text-xs text-ink transition-colors hover:border-cyan/50">
               <input type="checkbox" className="size-3.5 accent-cyan" checked={draft.includes(r.id)} disabled={m.accepted} onChange={() => toggle(r.id)} />
               {r.label}
             </label>
@@ -41,7 +41,7 @@ export default function DecisionReasonPanel({ m, onFinish }) {
         <p className="label-xs">{selectionCopy.informationalTitle}</p>
         <ul className="mt-1 flex flex-wrap gap-1.5">
           {informational.map((r) => (
-            <li key={r.id} className="flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] text-success">
+            <li key={r.id} className="flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] text-success">
               <CheckCircle2 className="size-3" aria-hidden="true" /> {r.label}
             </li>
           ))}

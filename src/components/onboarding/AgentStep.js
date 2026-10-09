@@ -15,11 +15,11 @@ export default function AgentStep({ state, onNext, onBack }) {
   return (
     <div>
       <div className="grid items-center gap-6 md:grid-cols-[1fr_1.2fr]">
-        <TrainingAgentSlot gender={state.avatarSelection ?? "male"} className="h-72 md:h-[26rem]" />
+        <TrainingAgentSlot gender={state.avatarSelection ?? "male"} className="h-72 md:h-[min(26rem,55dvh)]" />
         <div className="space-y-6">
           <div
             key={replays}
-            className="animate-fade-up rounded-2xl rounded-bl-none border border-line bg-surface-2 p-6"
+            className="animate-fade-up rounded-2xl rounded-bl-none app-border bg-surface-2 p-6"
           >
             <h2 className="text-xl font-bold text-ink">{GREETING}</h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-dim">{agentMessage.replace(`${GREETING} `, "")}</p>
@@ -29,7 +29,7 @@ export default function AgentStep({ state, onNext, onBack }) {
               const Icon = Icons[c.icon];
               return (
                 <li key={c.label} className="flex items-center gap-3 text-sm text-ink">
-                  <span className="grid size-8 place-items-center rounded-lg border border-cyan/50 bg-surface text-cyan-bright">
+                  <span className="grid size-8 place-items-center rounded-lg app-border app-border-active bg-surface text-cyan-bright">
                     <Icon className="size-4" aria-hidden="true" />
                   </span>
                   {c.label}

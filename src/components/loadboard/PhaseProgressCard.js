@@ -1,7 +1,7 @@
 // Sidebar progress card: percentage ring + phase/level label.
 export default function PhaseProgressCard({ pct, phaseLabel, levelLabel, title }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3">
+    <div className="flex items-center gap-3 rounded-xl app-border bg-surface p-3">
       <div
         role="img"
         aria-label={`${phaseLabel} ${pct}% complete`}

@@ -29,7 +29,7 @@ export default function ProfileStep({ state, update, onNext, onBack }) {
               aria-checked={selected}
               onClick={() => update({ avatarSelection: opt.id })}
               className={`group relative overflow-hidden rounded-2xl border-2 bg-surface text-left transition ${
-                selected ? "border-blue shadow-[0_0_30px_rgb(38_140_255/0.35)]" : "border-line hover:border-cyan/60"
+                selected ? "app-border-active shadow-[0_0_30px_rgb(38_140_255/0.35)]" : " hover:border-cyan/60"
               }`}
             >
               <GameImage
@@ -48,7 +48,7 @@ export default function ProfileStep({ state, update, onNext, onBack }) {
                 </span>
               )}
               <div className="flex items-center justify-center gap-2 border-t border-line bg-navy-900/90 py-3 text-sm font-semibold text-ink">
-                <span className={`grid size-4 place-items-center rounded-full border ${selected ? "border-blue bg-blue" : "border-ink-dim"}`}>
+                <span className={`grid size-4 place-items-center rounded-full app-border ${selected ? "app-border-active bg-blue" : "border-ink-dim"}`}>
                   {selected && <span className="size-1.5 rounded-full bg-white" />}
                 </span>
                 {opt.label}
@@ -60,7 +60,7 @@ export default function ProfileStep({ state, update, onNext, onBack }) {
 
       <dl className="mt-6 grid grid-cols-2 gap-3 text-left sm:grid-cols-4">
         {info.map(([label, value]) => (
-          <div key={label} className="rounded-xl border border-line bg-surface px-4 py-2.5">
+          <div key={label} className="rounded-xl app-border bg-surface px-4 py-2.5">
             <dt className="text-[11px] text-ink-dim">{label}</dt>
             <dd className="truncate text-sm font-semibold text-ink">{value}</dd>
           </div>

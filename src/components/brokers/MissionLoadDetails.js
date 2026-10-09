@@ -17,7 +17,7 @@ function Fact({ label, children, sub, wide = false }) {
     <div className={`min-w-0 ${wide ? "col-span-2" : ""}`}>
       <dt className="label-xs">{label}</dt>
       <dd className="truncate text-xs font-semibold text-ink">{children}</dd>
-      {sub && <dd className="truncate text-[10px] text-ink-dim">{sub}</dd>}
+      {sub && <dd className="truncate text-[11px] text-ink-dim">{sub}</dd>}
     </div>
   );
 }
@@ -35,7 +35,7 @@ export default function MissionLoadDetails({ m, highlight }) {
     <section aria-label="Selected load details" className="panel overflow-hidden">
       <div className="flex items-center justify-between gap-2 border-b border-line/70 bg-linear-to-r from-blue/15 to-transparent px-3 py-2">
         <h2 className="text-sm font-extrabold text-ink">Load Details ({vars.ref})</h2>
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide ${STATUS_TONE[m.loadStatus]}`}>{m.loadStatus}</span>
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold tracking-wide ${STATUS_TONE[m.loadStatus]}`}>{m.loadStatus}</span>
       </div>
 
       <div className="flex items-center gap-2.5 px-3 pt-2.5">
@@ -45,7 +45,7 @@ export default function MissionLoadDetails({ m, highlight }) {
             {vars.origin} → {vars.destination}
           </p>
           <p className="text-xl font-extrabold leading-tight tabular-nums text-success">{vars.rate}</p>
-          <p className="text-[10px] text-ink-dim">
+          <p className="text-[11px] text-ink-dim">
             {load.loadedMiles.toLocaleString("en-US")} mi · ${analysis.allInRpm.toFixed(2)}/mi effective
           </p>
         </div>
@@ -81,7 +81,7 @@ export default function MissionLoadDetails({ m, highlight }) {
             </GameButton>
           )}
         </TaskHighlight>
-        {!reviewed && !canReview && <p className="mt-1 text-center text-[10px] text-ink-dim">{started ? "Select the correct broker first." : "Start the mission first."}</p>}
+        {!reviewed && !canReview && <p className="mt-1 text-center text-[11px] text-ink-dim">{started ? "Select the correct broker first." : "Start the mission first."}</p>}
       </div>
     </section>
   );

@@ -3,7 +3,12 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
-const WIDTHS = { md: "md:max-w-md", lg: "md:max-w-xl", xl: "md:max-w-3xl" };
+// Widths come from --app-drawer-width (responsive in globals.css); lg and xl are wider multiples of it.
+const WIDTHS = {
+  md: "md:w-[min(60vw,var(--app-drawer-width))]",
+  lg: "md:w-[min(65vw,calc(var(--app-drawer-width)*1.25))]",
+  xl: "md:w-[min(70vw,calc(var(--app-drawer-width)*1.7))]",
+};
 
 // Contextual detail panel: a right drawer from md up, a bottom sheet below. Children stay mounted
 // while closed (hidden), so typed drafts, tabs and scroll positions survive closing and reopening.
@@ -25,14 +30,14 @@ export default function GameDrawer({ open, onClose, title, subtitle, width = "md
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
-        className={`animate-fade-up flex max-h-[88vh] w-full flex-col rounded-t-2xl border border-line bg-surface-2 shadow-2xl md:max-h-none md:rounded-none md:rounded-l-2xl md:border-y-0 md:border-r-0 ${WIDTHS[width]}`}
+        className={`drawer-in glass-strong flex max-h-[88vh] w-full flex-col rounded-t-2xl md:max-h-none md:rounded-none md:rounded-l-2xl md:border-y-0 md:border-r-0 ${WIDTHS[width]}`}
       >
         <header className="flex items-start gap-3 border-b border-line/70 px-4 py-3">
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-base font-extrabold text-ink">{title}</h2>
             {subtitle && <p className="truncate text-xs text-ink-dim">{subtitle}</p>}
           </div>
-          <button ref={closeRef} type="button" onClick={onClose} aria-label={`Close ${title}`} className="grid size-8 shrink-0 place-items-center rounded-lg border border-line bg-surface text-ink-dim transition-colors hover:border-cyan hover:text-cyan-bright">
+          <button ref={closeRef} type="button" onClick={onClose} aria-label={`Close ${title}`} className="grid size-8 shrink-0 place-items-center rounded-lg app-border bg-surface text-ink-dim transition-colors hover:border-cyan hover:text-cyan-bright">
             <X className="size-4" aria-hidden="true" />
           </button>
         </header>

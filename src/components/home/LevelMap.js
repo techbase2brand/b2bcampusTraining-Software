@@ -22,9 +22,9 @@ function levelStatus(level, state) {
 
 const nodeStyle = {
   current:
-    "border-gold-bright bg-linear-to-b from-gold-bright to-gold text-navy-950 shadow-[0_0_36px_rgb(255_176_0/0.65)] hover:scale-105",
-  completed: "border-success bg-success/20 text-success shadow-[0_0_24px_rgb(0_200_150/0.45)] hover:scale-105",
-  locked: "cursor-not-allowed border-line bg-surface text-ink-dim",
+    "app-border-warning bg-linear-to-b from-gold-bright to-gold text-navy-950 shadow-[0_0_36px_rgb(255_176_0/0.65)] hover:scale-105",
+  completed: "app-border-success bg-success/20 text-success shadow-[0_0_24px_rgb(0_200_150/0.45)] hover:scale-105",
+  locked: "cursor-not-allowed bg-surface text-ink-dim",
 };
 
 // Winding path through the level positions (percent coordinates in a 100x100 box).
@@ -52,7 +52,7 @@ export default function LevelMap() {
     <div className="game-backdrop flex min-h-screen flex-col">
       <GameTopBar />
       <div className="flex flex-1">
-        <aside className="hidden w-56 shrink-0 border-r border-line bg-navy-900/60 lg:block">
+        <aside className="app-sidebar hidden shrink-0 border-r border-line bg-navy-900/60 lg:block">
           <GameSidebar
             items={resolveNav(homeNav, state)}
             activeId="home"
@@ -80,7 +80,7 @@ export default function LevelMap() {
           <p className="mt-1 text-sm text-ink-dim">Complete missions to unlock the next level.</p>
 
           {/* Desktop: glowing path map */}
-          <div className="relative mt-6 hidden h-[calc(100vh-15rem)] min-h-120 overflow-hidden rounded-2xl border border-line shadow-[0_0_40px_rgb(32_199_232/0.12)] md:block">
+          <div className="relative mt-6 hidden h-[calc(100vh-15rem)] min-h-120 overflow-hidden rounded-2xl app-border shadow-[0_0_40px_rgb(32_199_232/0.12)] md:block">
             <GameImage
               src="/images/levelmap-bg.png"
               alt=""
@@ -126,7 +126,7 @@ export default function LevelMap() {
                       level.id
                     )}
                   </button>
-                  <p className="rounded-lg border border-line bg-navy-950/85 px-3 py-1.5 text-center text-xs font-semibold leading-tight text-ink">
+                  <p className="rounded-lg app-border bg-navy-950/85 px-3 py-1.5 text-center text-xs font-semibold leading-tight text-ink">
                     {level.label.map((line) => (
                       <span key={line} className="block">
                         {line}
@@ -148,15 +148,15 @@ export default function LevelMap() {
                     type="button"
                     disabled={status === "locked"}
                     onClick={() => setSelected(level.id)}
-                    className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left ${
+                    className={`flex w-full items-center gap-4 rounded-2xl app-border p-4 text-left ${
                       status === "current"
-                        ? "border-gold bg-surface-2"
+                        ? "app-border-warning bg-surface-2"
                         : status === "completed"
-                          ? "border-success/60 bg-surface"
-                          : "border-line bg-surface opacity-60"
+                          ? "app-border-success bg-surface"
+                          : " bg-surface opacity-60"
                     }`}
                   >
-                    <span className="grid size-10 place-items-center rounded-full border border-line font-bold text-ink">
+                    <span className="grid size-10 place-items-center rounded-full app-border font-bold text-ink">
                       {status === "locked" ? <Lock className="size-4" aria-label="Locked" /> : level.id}
                     </span>
                     <span>

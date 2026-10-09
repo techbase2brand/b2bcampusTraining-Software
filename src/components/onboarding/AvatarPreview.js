@@ -8,7 +8,7 @@ export default function AvatarPreview({ gender, selected, size = "md" }) {
     <div
       data-avatar={gender}
       className={`grid place-items-center rounded-full border-2 bg-linear-to-b ${tone} ${dims} ${
-        selected ? "border-cyan-bright shadow-[0_0_24px_rgb(37_217_255/0.4)]" : "border-line"
+        selected ? "app-border-active shadow-[0_0_24px_rgb(37_217_255/0.4)]" : "app-border"
       }`}
     >
       <UserRound className="size-1/2 text-ink" aria-hidden="true" />

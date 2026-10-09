@@ -127,6 +127,8 @@ export const initialGameState = {
   trackingMessages: [], // [{ from: "dispatcher" | "driver" | "broker" | "system", channel: "chat" | "call", text }]
   trackingNotes: [],
   trackingCommMode: null,
+  trackingSegment: null, // the movement in progress: { fromStep, toStep, startedAt (real ms), durationSimMinutes, durationRealMs, startMiles, endMiles, startStatus }
+  trackingUpdates: [], // automatic driver updates: [{ id, key, kind: "auto", percent, timestamp, location, text }]
   currentETA: null, // simulation-clock string
   arrivalConfirmed: false,
   phase7Completed: false,

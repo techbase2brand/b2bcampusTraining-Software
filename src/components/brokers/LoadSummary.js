@@ -26,7 +26,7 @@ export default function LoadSummary({ m, highlight }) {
     <section aria-label="Load summary" className="panel p-3">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-extrabold text-ink">{vars.ref}</h2>
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide ${STATUS_TONE[m.loadStatus]}`}>{m.loadStatus}</span>
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold tracking-wide ${STATUS_TONE[m.loadStatus]}`}>{m.loadStatus}</span>
       </div>
       <p className="mt-1 text-xs font-semibold text-ink">
         {vars.origin} → {vars.destination}
@@ -47,9 +47,9 @@ export default function LoadSummary({ m, highlight }) {
           </GameButton>
         </TaskHighlight>
       )}
-      {!reviewed && !canReview && <p className="mt-1 text-center text-[10px] text-ink-dim">{m.run.started ? "Select the correct broker first." : "Start the mission first."}</p>}
+      {!reviewed && !canReview && <p className="mt-1 text-center text-[11px] text-ink-dim">{m.run.started ? "Select the correct broker first." : "Start the mission first."}</p>}
 
-      <button type="button" onClick={() => setOpen(true)} className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg border border-line py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
+      <button type="button" onClick={() => setOpen(true)} className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg app-border py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
         View Full Load Details <ChevronRight className="size-3.5" aria-hidden="true" />
       </button>
 

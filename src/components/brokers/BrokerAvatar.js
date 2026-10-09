@@ -11,7 +11,7 @@ export default function BrokerAvatar({ broker, className = "size-10 text-sm" }) 
     .toUpperCase();
   const tone = TONES[[...broker.id].reduce((a, c) => a + c.charCodeAt(0), 0) % TONES.length];
   return (
-    <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-xl border border-white/10 font-extrabold ${tone} ${className}`}>
+    <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-xl app-border border-white/10 font-extrabold ${tone} ${className}`}>
       {initials}
     </span>
   );

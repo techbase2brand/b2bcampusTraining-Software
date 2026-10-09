@@ -31,7 +31,7 @@ export default function NegotiationHelper({ m, setDraft, highlight, agreementOpe
     <div className="space-y-3">
       {agreed && (
         <TaskHighlight active={highlight === "confirm"}>
-          <section aria-label="Rate agreed" className="panel border-success/50 p-3">
+          <section aria-label="Rate agreed" className="panel liquid-border liquid-border--still app-border-success p-3">
             <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-success">
               <Handshake className="size-4" aria-hidden="true" /> {comms.confirmed ? "Agreement confirmed" : "Rate agreed"}
             </p>
@@ -45,7 +45,7 @@ export default function NegotiationHelper({ m, setDraft, highlight, agreementOpe
       )}
 
       {offer != null && (
-        <section aria-label="Broker offer" className="panel border-gold/40 p-3">
+        <section aria-label="Broker offer" className="panel app-border-warning p-3">
           <p className="label-xs text-gold-bright">Broker offer</p>
           <p className="text-2xl font-extrabold tabular-nums text-ink">{formatCurrency(offer)}</p>
           <GameButton size="sm" className="mt-2 w-full" onClick={() => m.send("That works for me, let's go with that.", "chat")}>
@@ -68,7 +68,7 @@ export default function NegotiationHelper({ m, setDraft, highlight, agreementOpe
               </GameButton>
             </>
           )}
-          <button type="button" onClick={() => setDrawer(true)} className="mt-2 w-full rounded-lg border border-line py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
+          <button type="button" onClick={() => setDrawer(true)} className="mt-2 w-full rounded-lg app-border py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
             {agreed ? "Rate Insights" : "More Suggestions"}
           </button>
         </section>
@@ -105,7 +105,7 @@ export default function NegotiationHelper({ m, setDraft, highlight, agreementOpe
         {tab === "suggested" ? (
           <ul className="space-y-1.5">
             {helper.suggestions.map((s) => (
-              <li key={s.id} className="flex items-start gap-2 rounded-lg border border-line/60 bg-navy-900/60 px-2.5 py-2">
+              <li key={s.id} className="flex items-start gap-2 rounded-lg app-border app-border-subtle bg-navy-900/60 px-2.5 py-2">
                 <p className="min-w-0 flex-1 text-xs leading-snug text-ink">{s.text}</p>
                 <button type="button" disabled={!enabled} onClick={() => placeText(s.text)} className="flex shrink-0 items-center gap-0.5 rounded-md bg-blue px-2 py-1 text-[11px] font-bold text-white transition hover:brightness-110 disabled:opacity-40">
                   Use <ArrowUpRight className="size-3" aria-hidden="true" />

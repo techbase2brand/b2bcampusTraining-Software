@@ -10,7 +10,7 @@ export default function TrainingFeedback({ tone, children }) {
   const s = styles[tone];
   const Icon = s.icon;
   return (
-    <div role="status" className={`animate-fade-up flex gap-2.5 rounded-lg border p-2.5 text-xs leading-relaxed text-ink ${s.box}`}>
+    <div role="status" className={`animate-fade-up flex gap-2.5 rounded-lg app-border p-2.5 text-xs leading-relaxed text-ink ${s.box} ${tone === "success" ? "success-sweep" : ""}`}>
       <Icon className={`mt-0.5 size-4 shrink-0 ${s.color}`} aria-hidden="true" />
       <p>{children}</p>
     </div>

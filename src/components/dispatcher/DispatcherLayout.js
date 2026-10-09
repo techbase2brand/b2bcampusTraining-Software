@@ -31,7 +31,7 @@ export default function DispatcherLayout({ activeId, highlightId = null, footer 
 
   const sidebar = (
     <div className="flex h-full flex-col overflow-y-auto">
-      <div className="p-4">
+      <div className="liquid-border liquid-border-subtle m-3 rounded-xl p-3">
         <BrandMark />
         <p className="mt-2 text-xs text-ink-dim">Dispatcher Training</p>
       </div>
@@ -42,14 +42,14 @@ export default function DispatcherLayout({ activeId, highlightId = null, footer 
 
   return (
     <div className="game-backdrop flex min-h-screen">
-      <aside className="sticky top-0 hidden h-screen w-56 shrink-0 border-r border-cyan/10 bg-navy-900/80 lg:block">
+      <aside className="app-sidebar sticky top-0 hidden h-dvh shrink-0 border-r border-cyan/10 bg-navy-900/80 lg:block">
         {sidebar}
       </aside>
 
       {drawer && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <button type="button" aria-label="Close menu" className="absolute inset-0 bg-navy-950/70" onClick={() => setDrawer(false)} />
-          <div className="relative h-full w-64 border-r border-line bg-navy-900">
+          <div className="relative h-full w-[min(18rem,85vw)] border-r border-line bg-navy-900">
             <button
               type="button"
               aria-label="Close menu"
@@ -72,12 +72,12 @@ export default function DispatcherLayout({ activeId, highlightId = null, footer 
                 type="button"
                 onClick={() => setDrawer(true)}
                 aria-label="Open menu"
-                className="grid size-9 shrink-0 place-items-center rounded-lg border border-line bg-surface text-ink lg:hidden"
+                className="grid size-9 shrink-0 place-items-center rounded-lg app-border bg-surface text-ink lg:hidden"
               >
                 <Menu className="size-4" aria-hidden="true" />
               </button>
               {features.globalSearch && (
-                <div className="hidden max-w-xl flex-1 items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm text-ink-dim sm:flex">
+                <div className="hidden max-w-xl flex-1 items-center gap-2 rounded-xl app-border bg-surface px-4 py-2.5 text-sm text-ink-dim sm:flex">
                   <Search className="size-4 shrink-0" aria-hidden="true" />
                   <span className="truncate">Search loads, brokers, trucks...</span>
                 </div>
@@ -85,7 +85,9 @@ export default function DispatcherLayout({ activeId, highlightId = null, footer 
             </div>
           }
         />
-        <main className="game-grid min-w-0 flex-1 p-3 sm:p-4 xl:p-5">{children}</main>
+        <main className="game-grid min-w-0 flex-1 app-page">
+          <div className="page-in">{children}</div>
+        </main>
       </div>
     </div>
   );

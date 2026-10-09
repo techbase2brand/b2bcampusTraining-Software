@@ -16,14 +16,14 @@ const SECTIONS = [
 const SHORT = { pickupTime: "When", deliveryTime: "When", pickup: "Where", delivery: "Where", rate: "Agreed", instructions: "Notes" };
 
 const TONE = {
-  amber: "border-gold/50 bg-gold/10 text-gold-bright",
-  green: "border-success/50 bg-success/10 text-success",
-  red: "border-danger/50 bg-danger/10 text-danger",
+  amber: "app-border-warning bg-gold/10 text-gold-bright",
+  green: "app-border-success bg-success/10 text-success",
+  red: "app-border-error bg-danger/10 text-danger",
 };
 
 function StatusRow({ tone, Icon, children }) {
   return (
-    <p className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-bold ${TONE[tone]}`}>
+    <p className={`flex items-center gap-2 rounded-lg app-border px-2.5 py-1.5 text-xs font-bold ${TONE[tone]}`}>
       <Icon className="size-4 shrink-0" aria-hidden="true" />
       {children}
     </p>
@@ -44,7 +44,7 @@ export default function DispatchSheetPanel({ m, highlight }) {
         <h2 className="flex items-center gap-1.5 text-sm font-extrabold text-ink">
           <FileText className="size-4 text-cyan-bright" aria-hidden="true" /> Dispatch Sheet
         </h2>
-        <span className="shrink-0 rounded-full bg-cyan/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-cyan-bright" aria-label="Load status">
+        <span className="shrink-0 rounded-full bg-cyan/15 px-2 py-0.5 text-[11px] font-bold tracking-wide text-cyan-bright" aria-label="Load status">
           {m.statusLabel}
         </span>
       </div>
@@ -52,11 +52,11 @@ export default function DispatchSheetPanel({ m, highlight }) {
       <div className="divide-y divide-line/50 px-3">
         {SECTIONS.map((sec) => (
           <div key={sec.title} className="py-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gold">{sec.title}</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-gold">{sec.title}</p>
             <dl className="mt-1 space-y-0.5">
               {sec.ids.map((id) => (
                 <div key={id} className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-2">
-                  <dt className="pt-px text-[10px] text-ink-dim">{SHORT[id] ?? byId[id].label}</dt>
+                  <dt className="pt-px text-[11px] text-ink-dim">{SHORT[id] ?? byId[id].label}</dt>
                   <dd className={`text-xs leading-snug ${id === "rate" ? "font-extrabold text-success" : "font-semibold text-ink"}`}>{byId[id].value}</dd>
                 </div>
               ))}
@@ -102,7 +102,7 @@ export default function DispatchSheetPanel({ m, highlight }) {
         {d.response === "declined" && <p className="text-[11px] leading-snug text-ink-dim">The driver cannot take this load. Choose another driver.</p>}
 
         {!d.assigned && !d.dispatchSent && (
-          <ol className="flex items-center gap-1.5 text-[10px] font-semibold text-ink-dim" aria-label="Dispatch steps">
+          <ol className="flex items-center gap-1.5 text-[11px] font-semibold text-ink-dim" aria-label="Dispatch steps">
             <li className={d.dispatchReviewed ? "text-success" : "text-cyan-bright"}>1 Review</li>
             <li aria-hidden="true">→</li>
             <li className={d.dispatchReviewed ? "text-cyan-bright" : ""}>2 Send to driver</li>
@@ -128,7 +128,7 @@ export default function DispatchSheetPanel({ m, highlight }) {
             </GameButton>
           </TaskHighlight>
         ) : null}
-        {!canAct && <p className="text-center text-[10px] text-ink-dim">{run.started ? "Select a driver first." : "Start the mission first."}</p>}
+        {!canAct && <p className="text-center text-[11px] text-ink-dim">{run.started ? "Select a driver first." : "Start the mission first."}</p>}
       </div>
     </section>
   );

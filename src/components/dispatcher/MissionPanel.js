@@ -16,7 +16,7 @@ export default function MissionPanel({ m }) {
   return (
     <aside
       aria-label="Mission panel"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-navy-900 shadow-[0_-8px_30px_rgb(0_0_0/0.4)] lg:static lg:z-auto lg:w-80 lg:shrink-0 lg:border-l lg:border-t-0 lg:shadow-none"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-navy-900 shadow-[0_-8px_30px_rgb(0_0_0/0.4)] lg:static lg:z-auto lg:w-[clamp(15rem,19vw,20rem)] lg:shrink-0 lg:border-l lg:border-t-0 lg:shadow-none"
     >
       <button
         type="button"

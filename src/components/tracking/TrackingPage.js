@@ -18,13 +18,56 @@ import PhaseComplete from "@/components/training/PhaseComplete";
 import { getCompletionStats } from "@/lib/completionStats";
 import DispatchBar from "@/components/dispatches/DispatchBar";
 import DispatchNotFound from "@/components/dispatches/DispatchNotFound";
-import TrackingStatus from "./TrackingStatus";
 import NextAction from "./NextAction";
+import JourneyCard from "./JourneyCard";
+import RecentEvents from "./RecentEvents";
+import DriverUpdates from "./DriverUpdates";
+import ShipmentDetails from "./ShipmentDetails";
 import LiveMap from "./LiveMap";
-import { ActiveShipments, EtaHealthPanel } from "./ShipPanels";
+import { EtaHealthPanel } from "./ShipPanels";
 import { ShipmentTimeline, PickupMonitor, ExceptionPanel } from "./TimelineAndActions";
 import TrackingComms from "./TrackingComms";
-import { AlertsPanel, LoadDriverStatus, ActivityLog, CheckCallLog, TaskList } from "./SidePanels";
+import { AlertsPanel, ActivityLog, CheckCallLog, TaskList } from "./SidePanels";
+
+// Every automatic driver update so far, newest first.
+function DriverUpdateHistory({ m }) {
+  const list = [...m.updates].reverse();
+  if (list.length === 0) return <p className="text-sm text-ink-dim">The driver has not sent an update yet.</p>;
+  return (
+    <ul className="space-y-2">
+      {list.map((u) => (
+        <li key={u.id} className="rounded-lg app-border app-border-subtle bg-navy-900/50 px-3 py-2">
+          <p className="text-xs font-semibold tabular-nums text-ink-dim">
+            {m.fmt(new Date(u.timestamp))} · {u.percent}% · {u.location}
+          </p>
+          <p className="text-sm text-ink">{u.text}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// Broker updates sent for this shipment (the tracker's own record) and the broker's replies.
+function BrokerUpdatesList({ m }) {
+  const updates = m.t.brokerUpdates;
+  const thread = m.t.messages.filter((x) => x.channel === "broker");
+  if (updates.length === 0 && thread.length === 0) return <p className="text-sm text-ink-dim">No broker update has been sent yet.</p>;
+  return (
+    <ul className="space-y-2">
+      {updates.map((u) => (
+        <li key={u.id} className="rounded-lg app-border app-border-subtle bg-navy-900/50 px-3 py-2 text-sm">
+          <p className="text-xs font-semibold tabular-nums text-ink-dim">{m.fmt(new Date(u.timestamp))}</p>
+          <p className="text-ink">{u.text}</p>
+        </li>
+      ))}
+      {thread.map((x, i) => (
+        <li key={`t-${i}`} className={`rounded-lg px-3 py-2 text-sm ${x.from === "broker" ? "bg-surface-2 text-ink" : "bg-blue/25 text-ink"}`}>
+          <span className="font-bold">{x.from === "broker" ? m.broker.name : "You"}:</span> {x.text}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 // Access gate: Tracking must be unlocked (same rule as the sidebar) and THIS dispatch must have an
 // assigned driver. The dispatch comes from the slug in the URL.
@@ -47,14 +90,14 @@ export default function TrackingPage() {
   return <Tracking slug={dispatchSlug} />;
 }
 
-const SHORTCUTS = [
-  { id: "comms", label: "Driver Comms" },
+// Everything that is not the journey, the next action or the three secondary actions sits under More.
+const MORE = [
   { id: "pickup", label: "Pickup Monitor" },
   { id: "eta", label: "ETA & Health" },
-  { id: "details", label: "Shipment Details" },
-  { id: "activity", label: "View Activity" },
+  { id: "activity", label: "Activity Log" },
   { id: "calls", label: "Check Call History" },
   { id: "alerts", label: "Alert History" },
+  { id: "broker", label: "Broker Updates" },
 ];
 
 function Tracking({ slug }) {
@@ -73,11 +116,11 @@ function Tracking({ slug }) {
   };
   const close = () => setDrawer(null);
 
-  // The one main action for the current task, from the engine's highlight. Check calls, the ETA
-  // review and the delay steps happen in drawers, so their button opens the right one.
+  // The ONE required action, shown in the Next Action card. Check calls, the ETA review and the delay
+  // steps happen in drawers, so their button opens the right one.
   const PRIMARY = {
     "start-trip": { label: "Start Trip", onClick: m.startTrip },
-    advance: { label: "Advance Simulation", onClick: m.advance },
+    advance: null, // the truck moves by itself; skipping ahead is a dev-only control in the Next Action card
     "confirm-departed": { label: "Confirm Departed", onClick: () => m.confirm("departed") },
     "confirm-arrived": { label: "Confirm Arrived", onClick: () => m.confirm("arrived") },
     "confirm-loading": { label: "Confirm Loading", onClick: () => m.confirm("loading") },
@@ -91,16 +134,24 @@ function Tracking({ slug }) {
     "ex-broker": { label: "Update Broker", onClick: () => setDrawer("delay") },
     "confirm-arrival": { label: "Confirm Arrival", onClick: m.confirmArrival },
   };
-  const primary = run.started && !run.completed ? PRIMARY[m.highlight] ?? null : null;
-  const shortcuts = m.exception ? [{ id: "delay", label: "Delay / Exception" }, ...SHORTCUTS] : SHORTCUTS;
+  const finished = run.started && !run.completed && !m.task;
+  const primary = run.started && !run.completed ? (finished ? { label: "Complete Mission", onClick: finish, disabled: !m.allTasksDone } : PRIMARY[m.highlight] ?? null) : null;
+  const more = m.exception ? [{ id: "delay", label: "Delay / Exception" }, ...MORE] : MORE;
 
   return (
     <DispatcherLayout activeId="tracking" footer={<PhaseProgressCard pct={pct} phaseLabel="Mission 6 Progress" levelLabel="Level 6" title={mission06.title} />}>
-      <div className="mx-auto max-w-[110rem] space-y-3">
-        <DispatchBar slug={slug} />
-        <MissionTaskBar eyebrow={phase7Page.eyebrow} title={phase7Page.title} m={m} primary={primary} onComplete={finish} />
+      <div className="mx-auto max-w-[100rem] space-y-3">
+        <DispatchBar
+          slug={slug}
+          extra={
+            <span className="text-xs text-ink-dim">
+              Driver <span className="font-semibold text-ink">{m.entry.driver.name}</span> · Truck <span className="font-semibold text-ink">{m.entry.truck.id}</span>
+            </span>
+          }
+        />
+        <MissionTaskBar eyebrow={phase7Page.eyebrow} title={phase7Page.title} m={m} hideCta hideStepper onComplete={finish} />
         {m.readOnly && (
-          <section aria-label="Dispatch completed" className="flex flex-wrap items-center gap-2 rounded-xl border border-success/40 bg-success/10 px-4 py-2.5">
+          <section aria-label="Dispatch completed" className="flex flex-wrap items-center gap-2 rounded-xl app-border app-border-success bg-success/10 px-4 py-2.5">
             <p className="mr-auto text-sm font-bold text-success">✓ This dispatch is completed and saved to your history.</p>
             <GameButton size="sm" variant="ghost" onClick={() => router.push("/dispatcher")}>
               Return to Dashboard
@@ -113,16 +164,27 @@ function Tracking({ slug }) {
             </GameButton>
           </section>
         )}
-        <TrackingStatus m={m} />
 
-        <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1fr)_17rem] xl:grid-cols-[minmax(0,1fr)_19rem]">
-          <LiveMap m={m} />
-          <NextAction m={m} primary={primary} onOpen={setDrawer} shortcuts={shortcuts} />
+        <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1fr)_clamp(16rem,22vw,20rem)]">
+          <div className="order-2 min-w-0 space-y-3 lg:order-1">
+            <JourneyCard m={m} />
+            <DriverUpdates m={m} onOpenHistory={() => setDrawer("updates")} />
+            <RecentEvents m={m} onOpenAll={() => setDrawer("activity")} />
+          </div>
+          <div className="order-1 lg:order-2">
+            <NextAction m={m} primary={primary} onOpen={setDrawer} more={more} />
+          </div>
         </div>
       </div>
 
-      <GameDrawer open={drawer === "comms"} onClose={close} title="Driver Communication" subtitle="Chat or call the driver for a status update" width="lg">
+      <GameDrawer open={drawer === "map"} onClose={close} title="Route map" subtitle="Pickup, current truck position and delivery (simulated)" width="xl">
+        <LiveMap m={m} />
+      </GameDrawer>
+      <GameDrawer open={drawer === "comms"} onClose={close} title="Contact Driver" subtitle="Chat or call the driver for a status update" width="lg">
         <TrackingComms m={m} />
+      </GameDrawer>
+      <GameDrawer open={drawer === "details"} onClose={close} title="Shipment Details" subtitle={m.load.referenceNumber}>
+        <ShipmentDetails m={m} />
       </GameDrawer>
       <GameDrawer open={drawer === "pickup"} onClose={close} title="Pickup Monitoring">
         <PickupMonitor m={m} />
@@ -132,10 +194,6 @@ function Tracking({ slug }) {
       </GameDrawer>
       <GameDrawer open={drawer === "delay"} onClose={close} title="Delay / Exception" subtitle="Acknowledge, re-plan the ETA, record it and update the broker">
         {m.exception ? <ExceptionPanel m={m} /> : <p className="text-sm text-ink-dim">No delay has been reported yet.</p>}
-      </GameDrawer>
-      <GameDrawer open={drawer === "details"} onClose={close} title="Shipment Details" subtitle={m.load.referenceNumber}>
-        <ActiveShipments m={m} />
-        <LoadDriverStatus m={m} />
       </GameDrawer>
       <GameDrawer open={drawer === "activity"} onClose={close} title="Activity" subtitle="Timeline, events and mission tasks" width="lg">
         <ShipmentTimeline m={m} />
@@ -147,6 +205,12 @@ function Tracking({ slug }) {
       </GameDrawer>
       <GameDrawer open={drawer === "alerts"} onClose={close} title="Alert History">
         <AlertsPanel m={m} />
+      </GameDrawer>
+      <GameDrawer open={drawer === "updates"} onClose={close} title="Driver Update History" subtitle={m.entry.driver.name}>
+        <DriverUpdateHistory m={m} />
+      </GameDrawer>
+      <GameDrawer open={drawer === "broker"} onClose={close} title="Broker Updates" subtitle={m.broker.name}>
+        <BrokerUpdatesList m={m} />
       </GameDrawer>
 
       {showComplete && run.completed && (() => {

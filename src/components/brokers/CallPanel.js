@@ -53,7 +53,7 @@ export default function CallPanel({ m, embedded = false }) {
   return (
     <section aria-label="Call panel" className={`flex flex-col gap-2.5 p-3 ${embedded ? "" : "panel"}`}>
       {features.aiCall && (
-        <div className="flex items-center justify-between gap-2 text-[10px]">
+        <div className="flex items-center justify-between gap-2 text-[11px]">
           <span className="rounded-full bg-blue px-2 py-0.5 font-bold text-white">{manual.label}</span>
           <span className="flex items-center gap-1 text-ink-dim/70" title={ai.note}>
             <Lock className="size-2.5" aria-hidden="true" /> {ai.label} · {ai.note}
@@ -81,7 +81,7 @@ export default function CallPanel({ m, embedded = false }) {
         )}
         {(connected || ended) && (
           <p className="mt-1 font-mono text-lg font-bold tabular-nums text-ink" aria-label={ended ? "Call duration" : "Call timer"}>
-            {ended && <span className="mr-1.5 font-sans text-[10px] font-semibold uppercase text-ink-dim">Duration</span>}
+            {ended && <span className="mr-1.5 font-sans text-[11px] font-semibold uppercase text-ink-dim">Duration</span>}
             {formatTimer(call.seconds)}
           </p>
         )}
@@ -100,7 +100,7 @@ export default function CallPanel({ m, embedded = false }) {
       {(live || transcript.length > 0) && (
         <div>
           <p className="label-xs">{ended ? "Call transcript" : "Live transcript"}</p>
-          <ul className="scroll-compact mt-1 max-h-32 space-y-1 overflow-y-auto rounded-lg border border-line/60 bg-navy-900/60 p-2" aria-live="polite">
+          <ul className="scroll-compact mt-1 max-h-32 space-y-1 overflow-y-auto rounded-lg app-border app-border-subtle bg-navy-900/60 p-2" aria-live="polite">
             {transcript.length === 0 && <li className="text-[11px] text-ink-dim">{dialing ? "Connecting..." : "No speech yet."}</li>}
             {transcript.map((t, i) => (
               <li key={i} className="text-[11px] leading-snug">
@@ -113,7 +113,7 @@ export default function CallPanel({ m, embedded = false }) {
           </ul>
           {connected && (
             <form onSubmit={speak} className="mt-1.5 flex gap-1.5">
-              <input value={say} onChange={(e) => setSay(e.target.value)} aria-label="Say on the call" placeholder="Say something..." className="h-8 min-w-0 flex-1 rounded-md border border-line bg-navy-900 px-2 text-xs text-ink outline-none focus:border-cyan" />
+              <input value={say} onChange={(e) => setSay(e.target.value)} aria-label="Say on the call" placeholder="Say something..." className="h-8 min-w-0 flex-1 rounded-md app-border bg-navy-900 px-2 text-xs text-ink outline-none focus:border-cyan" />
               <GameButton type="submit" size="sm" disabled={!say.trim()}>
                 Say
               </GameButton>
@@ -132,7 +132,7 @@ export default function CallPanel({ m, embedded = false }) {
           <p className="label-xs flex items-center gap-1">
             <NotebookPen className="size-3" aria-hidden="true" /> Call Notes
           </p>
-          <span className="rounded bg-success/15 px-1.5 py-0.5 text-[9px] font-bold uppercase text-success">Auto Notes</span>
+          <span className="rounded bg-success/15 px-1.5 py-0.5 text-[11px] font-bold uppercase text-success">Auto Notes</span>
         </div>
         {m.notes.length ? (
           <ul className="mt-1 space-y-0.5">

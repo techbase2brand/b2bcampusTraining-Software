@@ -24,12 +24,12 @@ export function ShipmentTimeline({ m }) {
           const current = i === currentIdx && !done;
           const at = row.status ? tl.steps.find((s) => (ROW_OF[s.status] ?? s.status) === row.id && s.index <= snap.step) : null;
           return (
-            <li key={row.id} aria-current={current ? "step" : undefined} className={`flex items-center gap-2 rounded-lg border px-2 py-1.5 text-xs ${current ? "border-cyan-bright/70 bg-cyan/10" : done ? "border-success/30 bg-success/5" : "border-line/60 bg-navy-900/40"}`}>
+            <li key={row.id} aria-current={current ? "step" : undefined} className={`flex items-center gap-2 rounded-lg app-border px-2 py-1.5 text-xs ${current ? "app-border-active bg-cyan/10" : done ? "app-border-success bg-success/5" : "app-border-subtle bg-navy-900/40"}`}>
               <span className={`grid size-5 shrink-0 place-items-center rounded-full ${done ? "bg-success text-navy-950" : current ? "bg-cyan-bright text-navy-950" : "bg-surface-2 text-ink-dim"}`}>
                 {done ? <Check className="size-3" aria-label="Done" /> : current ? <ArrowRight className="size-3" aria-label="Current" /> : <Circle className="size-2.5" aria-label="Pending" />}
               </span>
               <span className={`min-w-0 flex-1 truncate font-semibold ${done || current ? "text-ink" : "text-ink-dim"}`}>{row.label}</span>
-              {at && (done || current) && <span className="shrink-0 text-[10px] tabular-nums text-ink-dim">{m.fmt(at.time)}</span>}
+              {at && (done || current) && <span className="shrink-0 text-[11px] tabular-nums text-ink-dim">{m.fmt(at.time)}</span>}
             </li>
           );
         })}
@@ -40,11 +40,11 @@ export function ShipmentTimeline({ m }) {
 
 function CheckRow({ done, label, detail, children, active }) {
   return (
-    <li className="flex items-center gap-2 rounded-lg border border-line/60 bg-navy-900/50 px-2.5 py-1.5">
+    <li className="flex items-center gap-2 rounded-lg app-border app-border-subtle bg-navy-900/50 px-2.5 py-1.5">
       <span className={`grid size-5 shrink-0 place-items-center rounded-full ${done ? "bg-success text-navy-950" : "bg-surface-2 text-ink-dim"}`}>{done ? <Check className="size-3" aria-label="Done" /> : <Circle className="size-2.5" aria-label="Pending" />}</span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-xs font-semibold text-ink">{label}</p>
-        {detail && <p className="truncate text-[10px] text-ink-dim">{detail}</p>}
+        {detail && <p className="truncate text-[11px] text-ink-dim">{detail}</p>}
       </div>
       {children && <TaskHighlight active={active}>{children}</TaskHighlight>}
     </li>
@@ -96,9 +96,9 @@ export function ExceptionPanel({ m }) {
   const used = draft ?? m.brokerDraft;
 
   const step = (n, title, done, children, active) => (
-    <li className={`rounded-lg border px-2.5 py-2 ${done ? "border-success/30 bg-success/5" : "border-line/60 bg-navy-900/50"}`}>
+    <li className={`rounded-lg app-border px-2.5 py-2 ${done ? "app-border-success bg-success/5" : "app-border-subtle bg-navy-900/50"}`}>
       <p className="flex items-center gap-2 text-xs font-bold text-ink">
-        <span className={`grid size-5 place-items-center rounded-full text-[10px] ${done ? "bg-success text-navy-950" : "bg-surface-2 text-ink-dim"}`}>{done ? <Check className="size-3" aria-label="Done" /> : n}</span>
+        <span className={`grid size-5 place-items-center rounded-full text-[11px] ${done ? "bg-success text-navy-950" : "bg-surface-2 text-ink-dim"}`}>{done ? <Check className="size-3" aria-label="Done" /> : n}</span>
         {title}
       </p>
       <TaskHighlight active={active} className="mt-1.5">
@@ -108,10 +108,10 @@ export function ExceptionPanel({ m }) {
   );
 
   return (
-    <section aria-label="Exception handling" className="panel border-gold/40 p-3">
+    <section aria-label="Exception handling" className="panel app-border-warning p-3">
       <h2 className="flex items-center gap-1.5 text-sm font-extrabold text-ink">
         <AlertTriangle className="size-4 text-gold-bright" aria-hidden="true" /> Delay Reported
-        <span className="ml-auto rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-bold text-gold-bright">{ex.minutes} min · {ex.label}</span>
+        <span className="ml-auto rounded-full bg-gold/15 px-2 py-0.5 text-[11px] font-bold text-gold-bright">{ex.minutes} min · {ex.label}</span>
       </h2>
       <ol className="mt-2.5 space-y-1.5">
         {step(1, "Acknowledge the driver", f.ack, f.ack ? <p className="text-[11px] text-ink-dim">Driver acknowledged.</p> : (
@@ -123,7 +123,7 @@ export function ExceptionPanel({ m }) {
         {step(2, exceptionScript.etaTitle, f.etaSolved, (
           <div className="flex flex-wrap gap-1.5" role="group" aria-label={exceptionScript.etaTitle}>
             {m.etaOptions.map((o) => (
-              <button key={o.id} type="button" disabled={!f.ack || f.etaSolved} onClick={() => m.chooseEta(o.id)} className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors disabled:opacity-50 ${f.etaSolved && o.correct ? "border-success bg-success/15 text-success" : "border-line bg-surface-2 text-ink enabled:hover:border-cyan"}`}>
+              <button key={o.id} type="button" disabled={!f.ack || f.etaSolved} onClick={() => m.chooseEta(o.id)} className={`rounded-lg app-border px-2.5 py-1 text-xs font-semibold transition-colors disabled:opacity-50 ${f.etaSolved && o.correct ? "app-border-success bg-success/15 text-success" : " bg-surface-2 text-ink enabled:hover:border-cyan"}`}>
                 {m.fmt(o.time)}
               </button>
             ))}
@@ -137,7 +137,7 @@ export function ExceptionPanel({ m }) {
             </p>
             <div className="flex flex-wrap gap-1.5" role="group" aria-label={exceptionScript.apptTitle}>
               {exceptionScript.apptOptions.map((o) => (
-                <button key={o.id} type="button" disabled={!f.etaSolved || f.apptSolved} onClick={() => m.chooseAppointment(o.id)} className="rounded-lg border border-line bg-surface-2 px-2.5 py-1 text-xs font-semibold text-ink transition-colors enabled:hover:border-cyan disabled:opacity-50">
+                <button key={o.id} type="button" disabled={!f.etaSolved || f.apptSolved} onClick={() => m.chooseAppointment(o.id)} className="rounded-lg app-border bg-surface-2 px-2.5 py-1 text-xs font-semibold text-ink transition-colors enabled:hover:border-cyan disabled:opacity-50">
                   {o.label}
                 </button>
               ))}
@@ -164,7 +164,7 @@ export function ExceptionPanel({ m }) {
             )}
             {!brokerDone && (
               <>
-                <textarea value={used} onChange={(e) => setDraft(e.target.value)} rows={3} aria-label="Broker update" className="w-full resize-none rounded-lg border border-line bg-navy-900 px-2 py-1.5 text-xs text-ink outline-none focus:border-cyan" />
+                <textarea value={used} onChange={(e) => setDraft(e.target.value)} rows={3} aria-label="Broker update" className="w-full resize-none rounded-lg app-border bg-navy-900 px-2 py-1.5 text-xs text-ink outline-none focus:border-cyan" />
                 <GameButton size="sm" className="mt-1.5" disabled={!used.trim()} onClick={() => { m.sendBrokerUpdate(used); setDraft(null); }}>
                   <Send className="size-3.5" aria-hidden="true" /> Send to {m.broker.name}
                 </GameButton>

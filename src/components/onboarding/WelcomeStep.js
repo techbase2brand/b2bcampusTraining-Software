@@ -7,7 +7,7 @@ import GameButton from "@/components/game/GameButton";
 
 export default function WelcomeStep({ onNext }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-line bg-navy-900">
+    <div className="relative overflow-hidden rounded-3xl app-border bg-navy-900">
       <TruckScene className="absolute inset-x-0 bottom-0 h-full w-full opacity-40" />
       <div className="relative z-10 grid items-center gap-6 px-6 py-12 sm:px-12 md:grid-cols-[1.1fr_1fr]">
         <div>
@@ -26,7 +26,7 @@ export default function WelcomeStep({ onNext }) {
               const Icon = Icons[f.icon];
               return (
                 <li key={f.label} className="flex w-20 flex-col items-center gap-2 text-center">
-                  <span className="grid size-12 place-items-center rounded-xl border border-cyan/50 bg-surface-2 text-cyan-bright">
+                  <span className="grid size-12 place-items-center rounded-xl app-border app-border-active bg-surface-2 text-cyan-bright">
                     <Icon className="size-5" aria-hidden="true" />
                   </span>
                   <span className="text-[11px] text-ink-dim">{f.label}</span>
@@ -38,7 +38,7 @@ export default function WelcomeStep({ onNext }) {
             Begin Onboarding <ArrowRight className="size-4" aria-hidden="true" />
           </GameButton>
         </div>
-        <TrainingAgentSlot className="h-72 md:h-[26rem]" />
+        <TrainingAgentSlot className="h-72 md:h-[min(26rem,55dvh)]" />
       </div>
     </div>
   );

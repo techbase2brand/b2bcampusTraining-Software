@@ -27,7 +27,7 @@ export default function LoginPage() {
           <div className="mb-6 flex justify-center">
             <BrandMark center size="lg" subtitle />
           </div>
-          <div className="rounded-[20px] border border-cyan-bright/15 bg-[rgba(7,23,42,0.88)] p-7 shadow-[0_20px_60px_rgba(0,0,0,0.5)] backdrop-blur-md sm:p-9">
+          <div className="rounded-[20px] app-border app-border-subtle bg-[rgba(7,23,42,0.88)] p-7 shadow-[0_20px_60px_rgba(0,0,0,0.5)] backdrop-blur-md sm:p-9">
             <div className="mb-6 text-center">
               <h1 className="text-2xl font-bold text-ink">Welcome Back</h1>
               <p className="mt-1 text-sm text-ink-dim">Login to continue your training journey</p>

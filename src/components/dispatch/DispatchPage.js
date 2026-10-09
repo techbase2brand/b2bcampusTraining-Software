@@ -28,7 +28,7 @@ import DriverRoutePreview from "./DriverRoutePreview";
 function Gate({ title, text, action, onAction }) {
   return (
     <main className="game-backdrop grid min-h-screen place-items-center p-6">
-      <div className="max-w-md rounded-2xl border border-line bg-surface/90 p-8 text-center">
+      <div className="max-w-md rounded-2xl app-border bg-surface/90 p-8 text-center">
         <Lock className="mx-auto size-10 text-gold" aria-hidden="true" />
         <h1 className="mt-4 text-xl font-extrabold text-ink">{title}</h1>
         <p className="mt-2 text-sm text-ink-dim">{text}</p>
@@ -63,7 +63,9 @@ export default function DispatchPage() {
 
 // Column height on large screens: the workspace fills the viewport under the task bar, and each
 // column scrolls inside itself, so the page does not grow just because a panel is long.
-const WORK_H = "lg:h-[calc(100vh-17rem)] lg:min-h-[30rem]";
+const WORK_H = "lg:h-[calc(100dvh-21rem)] lg:min-h-[24rem]";
+// Third column only gets a fixed height once it sits beside the chat (>= 1360px); below that it stacks.
+const WORK_H_WIDE = "min-[1360px]:h-[calc(100dvh-21rem)] min-[1360px]:min-h-[24rem]";
 
 function Dispatch({ slug }) {
   const router = useRouter();
@@ -118,14 +120,14 @@ function Dispatch({ slug }) {
           ))}
         </div>
 
-        <div className="grid items-start gap-3 lg:grid-cols-[14rem_minmax(0,1fr)_16rem] xl:grid-cols-[15rem_minmax(0,1fr)_17rem]">
+        <div className="grid items-start gap-3 lg:max-[1359px]:grid-cols-[15.5rem_minmax(0,1fr)] min-[1360px]:max-[1699px]:grid-cols-[14rem_minmax(0,1fr)_16rem] min-[1700px]:grid-cols-[15rem_minmax(0,1fr)_17rem]">
           <div className={`${tab === "drivers" ? "block h-[70vh] min-h-[26rem]" : "hidden"} lg:block ${WORK_H}`}>
             <DriverList m={m} highlight={highlight} />
           </div>
           <div className={`${tab === "comms" ? "block h-[75vh] min-h-[28rem]" : "hidden"} lg:block ${WORK_H}`}>
             <DriverCommsPanel m={m} highlight={highlight} draft={draft} setDraft={setDraft} />
           </div>
-          <div className={`${tab === "assign" ? "block" : "hidden"} lg:block lg:overflow-y-auto lg:pr-1 ${WORK_H}`}>
+          <div className={`${tab === "assign" ? "block" : "hidden"} lg:block lg:max-[1359px]:col-span-2 min-[1360px]:overflow-y-auto min-[1360px]:pr-1 ${WORK_H_WIDE}`}>
             <AssignmentSummary m={m} highlight={highlight} onOpen={setDrawer} />
           </div>
         </div>

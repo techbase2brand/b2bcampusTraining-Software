@@ -175,6 +175,37 @@ export function snapshotAt(tl, step, { resolved = false, hosMinutes = 0 } = {}) 
   };
 }
 
+// The snapshot for a truck that is part-way between two scripted steps (automatic movement). The
+// status, ETAs, delays and health are the stepped ones (they only change at events); position, miles
+// left, location label, simulation time and HOS are interpolated from the segment progress `p`
+// (0..1). Between legs, or while loading, the truck stays where it is. Nothing new is calculated:
+// the same fractions, miles and times the timeline already holds.
+export function snapshotLive(tl, step, segment, p, opts = {}) {
+  const base = snapshotAt(tl, step, opts);
+  const a = tl.steps[segment.fromStep];
+  const b = tl.steps[segment.toStep];
+  const moves = a.leg === b.leg && a.frac !== b.frac;
+  const frac = moves ? lerp(a.frac, b.frac, p) : a.frac;
+  const leg = a.leg;
+  const from = leg === "pickup" ? tl.driverLoc : tl.pickupLoc;
+  const to = leg === "pickup" ? tl.pickupLoc : tl.destLoc;
+  const legMiles = leg === "pickup" ? tl.deadhead : tl.loadedMiles;
+  const remainingMiles = Math.round(legMiles * (1 - frac)) + (leg === "pickup" ? tl.loadedMiles : 0);
+  const driving = lerp(a.drivingMinutes, b.drivingMinutes, p);
+  return {
+    ...base,
+    leg,
+    frac,
+    remainingMiles,
+    mapPos: { x: lerp(from.mapPos.x, to.mapPos.x, frac), y: lerp(from.mapPos.y, to.mapPos.y, frac) },
+    location: positionLabel(from, to, frac, remainingMiles),
+    time: new Date(a.time.getTime() + (b.time.getTime() - a.time.getTime()) * p),
+    hosRemaining: Math.max(0, (opts.hosMinutes ?? 0) - Math.round(driving)),
+    progress: p,
+    moving: true,
+  };
+}
+
 // Active alerts, derived from the simulation state (never random). Future events are never listed.
 export function getAlerts(tl, snap, vars, { brokerUpdated = false } = {}) {
   const t = trackingAlertTemplates;

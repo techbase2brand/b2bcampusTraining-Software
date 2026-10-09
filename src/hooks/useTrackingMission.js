@@ -8,6 +8,8 @@ import * as T from "@/lib/trackingActions";
 import { getTrackingChecklist } from "@/lib/taskChecklists";
 import { fmtDateTime } from "@/lib/trackingComms";
 import { initialCall, reduceCall, callIsLive } from "@/lib/callSim";
+import { simulationConfig } from "@/data/simulationConfig";
+import { features } from "@/data/features";
 
 // Runs `callback` every `delay` ms using the latest closure (delay null = paused).
 function useInterval(callback, delay) {
@@ -22,6 +24,19 @@ function useInterval(callback, delay) {
   }, [delay]);
 }
 
+// Runs `callback` when the tab becomes visible again (a sleeping tab does not tick).
+function useVisible(callback) {
+  const saved = useRef(callback);
+  useEffect(() => {
+    saved.current = callback;
+  });
+  useEffect(() => {
+    const onVisible = () => document.visibilityState === "visible" && saved.current();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, []);
+}
+
 // Mission 6 state for the UI. Transitions live in lib/trackingActions.js (and the scripted trip in
 // lib/trackingEngine.js); they persist through the game store. The call itself (status, timer,
 // mute) is transient UI state driven by lib/callSim.js.
@@ -33,6 +48,7 @@ export function useTrackingMission(slug) {
   const [feedback, setFeedback] = useState(null);
   const [hint, setHint] = useState(null);
   const [call, setCall] = useState(initialCall);
+  const [, setTick] = useState(0); // re-render on a timer so the live position refreshes
 
   function dispatch(out) {
     update(out.patch ?? {});
@@ -48,6 +64,27 @@ export function useTrackingMission(slug) {
     setCall(next);
     if (call.status === "dialing" && next.status === "connected") dispatch(T.connectCall(state));
   }, callIsLive(call) ? 1000 : null);
+
+  // Movement is automatic: the saved segment start time is the source of truth, so this only commits
+  // what the clock has already done (finished steps, driver updates) and refreshes the screen. It runs
+  // on mount, every tick and when the tab wakes up; calling it again never repeats anything.
+  const settleNow = () => {
+    const out = T.settle(state);
+    if (out.patch && Object.keys(out.patch).length) dispatch(out);
+  };
+  const sync = () => {
+    setTick((n) => n + 1);
+    settleNow();
+  };
+  const running = c.ok && c.run.started && !readOnly && !c.run.completed;
+  useInterval(sync, running ? simulationConfig.trackingTimeScale.tickMs : null);
+  useVisible(() => running && sync());
+  useEffect(() => {
+    if (!running) return undefined;
+    const id = setTimeout(settleNow, 0); // catch up straight away (e.g. after a refresh)
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running]);
 
   const { snap, t, tl } = c;
   return {
@@ -80,6 +117,10 @@ export function useTrackingMission(slug) {
     feedback,
     hint,
     call,
+    clock: T.getTrainingClock(c), // { moving, progress, nextEventMs, toStopMs, stopLabel } in TRAINING time
+    updates: c.t.updates, // automatic driver updates, oldest first
+    latestUpdate: c.t.updates.at(-1) ?? null,
+    devControls: features.devTrackingControls, // "Skip to next event": development builds only
     statusLabel: c.ok ? snap.status : trackingStatuses["ready-for-pickup"],
     fmt: fmtDateTime,
     hos: c.ok ? formatDuration(snap.hosRemaining) : "-",

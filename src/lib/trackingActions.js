@@ -7,8 +7,14 @@
 // Shipment status flow: ready for pickup -> en route -> arrived at pickup -> loading -> picked up ->
 // in transit -> check call / monitoring -> arrived at delivery. It stops there: delivery, POD, BOL
 // and closeout belong to the next phase.
+//
+// Movement is automatic and time based. A segment (trackingSegment) records when the truck started
+// moving to the next scripted step; progress is derived from that real timestamp compressed by
+// simulationConfig.trackingTimeScale (see lib/trackingTime.js), so it survives refresh and sleep.
+// settle() commits the steps whose time has come. The truck stops at the events that need the
+// student (arrival, pickup confirmation, a reported delay): see `autoNext` in the scenario data.
 
-import { mission06, trackingScenario, trackingStatuses, exceptionScript, checkCallTopics } from "@/data/phase7Missions";
+import { mission06, trackingScenario, trackingStatuses, exceptionScript, checkCallTopics, driverUpdateScript } from "@/data/phase7Missions";
 import { callScript } from "@/data/brokerComms";
 import { simulationConfig } from "@/data/simulationConfig";
 import { taskXp } from "@/data/rewards";
@@ -17,7 +23,9 @@ import { getLoad, getBroker } from "./loadSelectors";
 import { listCompatibleLoadIds } from "./loadRules";
 import { evaluateDriver } from "./driverRules";
 import { getRosterEntry, getRoster } from "./dispatchRoster";
-import { buildTimeline, snapshotAt, getAlerts, etaOptions, toSimString, exceptionAt } from "./trackingEngine";
+import { buildTimeline, snapshotAt, snapshotLive, getAlerts, etaOptions, toSimString, exceptionAt } from "./trackingEngine";
+import { getNow } from "./trackingClock";
+import { segmentFor, segmentProgress, simMinutesBetween, simMinutesToRealMs } from "./trackingTime";
 import {
   detectTrackingTopics,
   checkTopicsOf,
@@ -36,7 +44,7 @@ import { fillTemplate, formatSimClock, parseSimTime } from "./text";
 
 const EMPTY_RUN = { ...initialMissionProgress, missionId: mission06.id };
 const FLAGS = initialGameState.trackingFlags;
-const FRESH = { step: 0, flags: FLAGS, messages: [], notes: [], mode: null, checkCalls: [], activity: [], delays: [], brokerUpdates: [], arrival: false };
+const FRESH = { step: 0, flags: FLAGS, messages: [], notes: [], mode: null, checkCalls: [], activity: [], delays: [], brokerUpdates: [], arrival: false, segment: null, updates: [] };
 const fb = mission06.feedback;
 const TASKS = mission06.tasks;
 
@@ -62,6 +70,8 @@ export function readTracking(state) {
         delays: state.delayEvents ?? [],
         brokerUpdates: state.brokerUpdates ?? [],
         arrival: Boolean(state.arrivalConfirmed),
+        segment: state.trackingSegment ?? null,
+        updates: state.trackingUpdates ?? [],
       }
     : FRESH;
   const run = own || stored.completed ? stored : EMPTY_RUN;
@@ -72,10 +82,14 @@ export function readTracking(state) {
   const exc = exceptionAt(tl, t.step);
   const brokerOk = exc ? t.brokerUpdates.some((u) => u.valid && u.step >= exc.step) : true;
   const handled = t.flags.ack && t.flags.etaSolved && t.flags.apptSolved && t.flags.recorded;
-  const snap = snapshotAt(tl, t.step, { resolved: Boolean(exc) && handled && brokerOk, hosMinutes: entry.driver.hosMinutes });
+  const opts = { resolved: Boolean(exc) && handled && brokerOk, hosMinutes: entry.driver.hosMinutes };
+  // While the truck is moving, the snapshot is interpolated from the real time elapsed in the segment.
+  const now = getNow();
+  const live = t.segment && t.segment.fromStep === t.step ? t.segment : null;
+  const snap = live ? snapshotLive(tl, t.step, live, segmentProgress(live, now), opts) : snapshotAt(tl, t.step, opts);
   const vars = buildTrackingVars({ load, entry, broker, snap });
   const open = Boolean(exc) && !(handled && brokerOk);
-  return { ok, load, entry, broker, run, t, tl, snap, vars, agreedRate: state.agreedRate ?? load.rate, exc, brokerOk, handled, open };
+  return { ok, load, entry, broker, run, t, tl, snap, vars, agreedRate: state.agreedRate ?? load.rate, exc, brokerOk, handled, open, now, segment: live };
 }
 
 // Shipments listed in the left panel. One today; the list shape supports several.
@@ -125,8 +139,9 @@ function advanceTasks(c, run, xp) {
 }
 
 // Write the whole Phase 6 -> 7 slice for the new tracker state `t`, then advance the mission.
-function commit(state, base, t, run, extra = {}) {
-  const next = readTracking({ ...state, trackingLoadId: base.load.id, trackingStep: t.step, trackingFlags: t.flags, trackingMessages: t.messages, trackingNotes: t.notes, trackingCommMode: t.mode, checkCallLog: t.checkCalls, activityLog: t.activity, delayEvents: t.delays, brokerUpdates: t.brokerUpdates, arrivalConfirmed: t.arrival, missionRuns: { ...state.missionRuns, [mission06.id]: run } });
+function commit(state, base, t0, run, extra = {}) {
+  const t = ensureSegment(t0, base.tl);
+  const next = readTracking({ ...state, trackingSegment: t.segment ?? null, trackingUpdates: t.updates ?? [], trackingLoadId: base.load.id, trackingStep: t.step, trackingFlags: t.flags, trackingMessages: t.messages, trackingNotes: t.notes, trackingCommMode: t.mode, checkCallLog: t.checkCalls, activityLog: t.activity, delayEvents: t.delays, brokerUpdates: t.brokerUpdates, arrivalConfirmed: t.arrival, missionRuns: { ...state.missionRuns, [mission06.id]: run } });
   const res = advanceTasks(next, run, state.xp);
   const last = res.completed.at(-1);
   const lastTask = last && TASKS.find((x) => x.id === last);
@@ -135,6 +150,8 @@ function commit(state, base, t, run, extra = {}) {
       trackingLoadId: base.load.id,
       trackingStep: t.step,
       trackingFlags: t.flags,
+      trackingSegment: t.segment ?? null,
+      trackingUpdates: t.updates ?? [],
       currentShipmentStatus: next.snap.statusId,
       lastKnownLocation: next.snap.location,
       checkCallLog: t.checkCalls,
@@ -187,6 +204,7 @@ function moveTo(state, c, step) {
   const stepCtx = { ...c, snap: toSnap, vars: buildTrackingVars({ load: c.load, entry: c.entry, broker: c.broker, snap: toSnap }) };
   let t = { ...c.t, step };
   if (sc.activity) t = addActivity(t, stepCtx, `status-${sc.status}`, fillTemplate(sc.activity, stepCtx.vars), toSnap.time);
+  t = addStepUpdate(t, stepCtx, step);
   const delay = c.tl.steps[step].delay;
   if (delay) {
     const line = fillTemplate(trackingScenario.delays[delay.id].driverLine, { ...stepCtx.vars, minutes: delay.minutes });
@@ -210,7 +228,8 @@ export function startTrip(state) {
   return withMessage(out, { tone: "success", text: fb.tripStarted });
 }
 
-// Training control: advance to the next scripted event. Blocked while a reported delay is unresolved.
+// Development / test control: skip to the next event the truck would stop at. Normal movement is
+// automatic; this follows the same steps instantly. Blocked while a reported delay is unresolved.
 export function advance(state) {
   const c = readTracking(state);
   if (!c.ok) return noop();
@@ -218,14 +237,141 @@ export function advance(state) {
   if (c.t.step < 1) return noop({ tone: "hint", text: "Start the trip first." });
   if (c.t.step >= c.tl.lastStep) return noop();
   if (c.open) return noop({ tone: "hint", text: fb.exceptionOpen });
-  return commit(state, c, moveTo(state, c, c.t.step + 1), c.run);
+  let t = { ...c.t, segment: null };
+  t = moveTo(state, { ...c, t }, t.step + 1);
+  for (let target = nextTarget(t, c.tl); target != null; target = nextTarget(t, c.tl)) t = moveTo(state, { ...c, t }, target);
+  return commit(state, c, t, c.run);
+}
+
+// ---- Automatic movement ---------------------------------------------------------------------
+
+// Is a reported delay still waiting to be handled (and the broker told)?
+function delayOpen(tl, t) {
+  const exc = exceptionAt(tl, t.step);
+  if (!exc) return false;
+  const handled = t.flags.ack && t.flags.etaSolved && t.flags.apptSolved && t.flags.recorded;
+  return !(handled && t.brokerUpdates.some((u) => u.valid && u.step >= exc.step));
+}
+
+// The step the truck moves to by itself from the current one, or null when it must wait for the student.
+export function nextTarget(t, tl) {
+  const rule = trackingScenario.steps[t.step]?.autoNext;
+  if (!rule || t.step >= tl.lastStep) return null;
+  if (rule.requiresFlag && !t.flags[rule.requiresFlag]) return null;
+  if (rule.blockedWhenOpen && delayOpen(tl, t)) return null;
+  return t.step + 1;
+}
+
+// Start the next movement now, when one is due and none is running.
+function ensureSegment(t, tl) {
+  if (t.segment && t.segment.fromStep === t.step) return t;
+  const target = nextTarget(t, tl);
+  return target == null ? (t.segment ? { ...t, segment: null } : t) : { ...t, segment: segmentFor(tl, t.step, target, getNow()) };
+}
+
+const pct = (frac) => Math.round(frac * 100);
+
+// One automatic driver update, once per key (so a refresh never repeats it). Also logged as an activity
+// event of its own type (a check call is a different event).
+function addUpdate(t, ctx, key, percent, text, time) {
+  if (t.updates.some((u) => u.key === key)) return t;
+  const update = { id: `du-${t.updates.length + 1}`, key, kind: "auto", percent, timestamp: toSimString(time), location: ctx.snap.location, text };
+  return addActivity({ ...t, updates: [...t.updates, update] }, ctx, "driver-update", text, time);
+}
+
+function updateText(template, ctx) {
+  const { snap } = ctx;
+  const toTarget = snap.target === "pickup" ? Math.max(0, snap.remainingMiles - ctx.tl.loadedMiles) : snap.remainingMiles;
+  const delayed = snap.delays.some((d) => d.exception);
+  const text = delayed && template.progress ? driverUpdateScript.delayed : template.text;
+  return fillTemplate(text, { ...ctx.vars, toTarget, minutes: snap.delayTotal, remaining: snap.remainingMiles });
+}
+
+// Trip start and arrival updates, when those steps are reached.
+function addStepUpdate(t, ctx, step) {
+  const sc = trackingScenario.steps[step];
+  if (step === 1) return addUpdate(t, ctx, "pickup:start", 0, updateText({ text: driverUpdateScript.start }, ctx), ctx.snap.time);
+  if (sc.status === "arrived-pickup") return addUpdate(t, ctx, "pickup:arrive", 100, updateText({ text: driverUpdateScript.arrival.pickup }, ctx), ctx.snap.time);
+  if (sc.status === "arrived-delivery") return addUpdate(t, ctx, "delivery:arrive", 100, updateText({ text: driverUpdateScript.arrival.delivery }, ctx), ctx.snap.time);
+  return t;
+}
+
+// Threshold updates (25 / 50 / 75 / 90 %) for the leg this segment moves along, up to progress `p`.
+function emitSegmentUpdates(t, c, seg, p) {
+  const a = c.tl.steps[seg.fromStep];
+  const b = c.tl.steps[seg.toStep];
+  if (a.leg !== b.leg || a.frac === b.frac) return t;
+  const target = a.leg === "pickup" ? "pickup" : "delivery";
+  const now = a.frac + (b.frac - a.frac) * p;
+  let next = t;
+  for (const th of simulationConfig.trackingTimeScale.driverUpdateThresholds) {
+    if (!(th > a.frac && th <= now + 1e-9)) continue;
+    const at = (th - a.frac) / (b.frac - a.frac);
+    const snap = snapshotLive(c.tl, seg.fromStep, seg, at, { hosMinutes: c.entry.driver.hosMinutes });
+    const ctx = { ...c, t: next, snap, vars: buildTrackingVars({ load: c.load, entry: c.entry, broker: c.broker, snap }) };
+    const template = { progress: true, text: driverUpdateScript.progress[target][pct(th)] };
+    if (!template.text) continue;
+    next = addUpdate(next, ctx, `${target}:${pct(th)}`, pct(th), updateText(template, ctx), snap.time);
+  }
+  return next;
+}
+
+// Commit whatever the clock has already done: finish the segments whose time is up (logging each step
+// the truck reached and its delay), report the driver updates it passed, and stop at the next event
+// that needs the student. Idempotent: calling it twice, or after a refresh, changes nothing more.
+export function settle(state, nowMs = getNow()) {
+  const c = readTracking(state);
+  if (!c.ok || !c.run.started || c.run.completed || c.t.arrival) return noop();
+  let t = c.t;
+  let chainedAt = null; // when the previous segment ended: the next one starts there, not "now"
+  let changed = false;
+  for (let guard = 0; guard < 80; guard++) {
+    let seg = t.segment && t.segment.fromStep === t.step ? t.segment : null;
+    if (!seg) {
+      const target = nextTarget(t, c.tl);
+      if (target == null) break;
+      seg = segmentFor(c.tl, t.step, target, chainedAt ?? nowMs);
+      t = { ...t, segment: seg };
+      changed = true;
+    }
+    const p = segmentProgress(seg, nowMs);
+    const withUpdates = emitSegmentUpdates(t, { ...c, t }, seg, p);
+    if (withUpdates !== t) changed = true;
+    t = withUpdates;
+    if (p < 1) break;
+    t = { ...moveTo(state, { ...c, t }, seg.toStep), segment: null };
+    chainedAt = seg.startedAt + seg.durationRealMs;
+    changed = true;
+  }
+  if (!changed) return noop();
+  return commit(state, c, t, c.run);
+}
+
+// What the student is waiting for, in TRAINING (real) time: this movement, and the whole run until the
+// truck next needs them. Not the shipment ETA (that stays on the simulation clock).
+const STOPS = { "arrived-pickup": "pickup", "picked-up": "loading to finish", monitoring: "the delay report", "arrived-delivery": "delivery" };
+export function getTrainingClock(c) {
+  if (!c.ok || !c.run.started) return null;
+  const seg = c.segment;
+  if (!seg) return { moving: false };
+  const progress = segmentProgress(seg, c.now);
+  const nextEventMs = (1 - progress) * seg.durationRealMs;
+  let toStopMs = nextEventMs;
+  let t = { ...c.t, step: seg.toStep, segment: null };
+  for (let target = nextTarget(t, c.tl); target != null; target = nextTarget(t, c.tl)) {
+    toStopMs += simMinutesToRealMs(simMinutesBetween(c.tl, t.step, target));
+    t = { ...t, step: target };
+  }
+  const stopStep = c.tl.steps[t.step];
+  return { moving: true, progress, nextEventMs, toStopMs, stopLabel: STOPS[stopStep.status] ?? trackingStatuses[stopStep.status].toLowerCase() };
 }
 
 // ---- Pickup monitoring --------------------------------------------------------------------
 
+// `then: "next"`: the confirmation also moves the shipment on (arrival confirmed -> loading starts).
 const CONFIRM = {
   departed: { minStep: 1, type: "confirm-departed", text: "Confirmed: driver departed. Pickup ETA {etaPickup}." },
-  arrived: { minStep: 3, type: "confirm-arrived", text: "Confirmed: driver arrived at the pickup." },
+  arrived: { minStep: 3, type: "confirm-arrived", text: "Confirmed: driver arrived at the pickup.", then: "next" },
   loading: { minStep: 4, type: "confirm-loading", text: "Confirmed: loading in progress at the shipper." },
   pickedUp: { minStep: 5, type: "confirm-picked-up", text: "Confirmed: pickup complete." },
 };
@@ -240,6 +386,7 @@ export function confirmStatus(state, flag) {
   if (flag === "pickedUp" && !c.t.flags.loading) return noop({ tone: "hint", text: fb.needLoading });
   let t = { ...c.t, flags: { ...c.t.flags, [flag]: true } };
   t = addActivity(t, c, rule.type, fillTemplate(rule.text, c.vars));
+  if (rule.then === "next" && c.t.step < c.tl.lastStep) t = moveTo(state, { ...c, t }, c.t.step + 1);
   return commit(state, c, t, c.run);
 }
 

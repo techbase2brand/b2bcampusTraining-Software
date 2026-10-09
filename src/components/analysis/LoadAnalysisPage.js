@@ -32,7 +32,7 @@ const LEVEL_ID = mission03.levelId;
 function Gate({ title, text, action, onAction }) {
   return (
     <main className="game-backdrop grid min-h-screen place-items-center p-6">
-      <div className="max-w-md rounded-2xl border border-line bg-surface/90 p-8 text-center">
+      <div className="max-w-md rounded-2xl app-border bg-surface/90 p-8 text-center">
         <Lock className="mx-auto size-10 text-gold" aria-hidden="true" />
         <h1 className="mt-4 text-xl font-extrabold text-ink">{title}</h1>
         <p className="mt-2 text-sm text-ink-dim">{text}</p>
@@ -84,7 +84,7 @@ function LoadAnalysis({ slug }) {
     >
       <div className="mx-auto max-w-[110rem] space-y-4">
         <DispatchBar slug={slug} />
-        <section className="relative overflow-hidden rounded-2xl border border-cyan/15 bg-navy-900 shadow-[0_8px_30px_rgb(0_0_0/0.3)]">
+        <section className="relative overflow-hidden rounded-2xl app-border app-border-subtle bg-navy-900 shadow-[0_8px_30px_rgb(0_0_0/0.3)]">
           <GameImage src="/images/login-truck.png" alt="" sizes="60vw" className="absolute inset-y-0 left-[30%] right-0 [mask-image:linear-gradient(90deg,transparent,#000_40%)]" />
           <div className="absolute inset-0 bg-linear-to-r from-navy-950 via-navy-950/75 to-navy-950/30" />
           <div className="relative grid items-center gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[1.1fr_1fr]">
@@ -93,26 +93,28 @@ function LoadAnalysis({ slug }) {
               <h1 className="mt-1 text-xl font-extrabold uppercase leading-tight tracking-wide text-ink sm:text-2xl">{phase4Page.title}</h1>
               <p className="mt-1.5 max-w-md text-xs leading-relaxed text-ink-dim">{phase4Page.subtitle}</p>
             </div>
-            <div className="rounded-xl border border-cyan/25 bg-navy-950/80 p-3 backdrop-blur-sm">
+            <div className="rounded-xl app-border app-border-subtle bg-navy-950/80 p-3 backdrop-blur-sm">
               <StepTracker index={m.stepIndex} completed={run.completed} />
             </div>
           </div>
         </section>
 
-        <div className="grid items-start gap-3 xl:grid-cols-[17rem_minmax(0,1fr)_21rem]">
+        <div className="grid items-start gap-3 lg:max-[1439px]:grid-cols-[15rem_minmax(0,1fr)] min-[1440px]:grid-cols-[15rem_minmax(0,1fr)_19rem]">
           <AssignedTruckPanel />
           <ShortlistedLoadCards m={m} highlight={highlight} />
-          <AgentPanel m={m} onFinish={finish} />
+          <div className="lg:max-[1439px]:col-span-2">
+            <AgentPanel m={m} onFinish={finish} />
+          </div>
         </div>
 
-        <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1fr)_21rem]">
+        <div className="grid items-start gap-3 min-[1280px]:grid-cols-[minmax(0,1fr)_clamp(17rem,22vw,21rem)]">
           <AnalysisTabs m={m} highlight={highlight} tab={tab} onTab={setTab} />
           <div className="space-y-3">
             <SelectedLoadPanel m={m} highlight={highlight} onSelect={setConfirmId} onShowMap={() => setTab("route")} />
             <DecisionReasonPanel key={`${m.selectedBestLoadId}-${m.accepted}`} m={m} onFinish={proceed} />
             <PracticeSummary slug={slug}>
               {m.hasBrokerAttempt && (
-                <button type="button" onClick={() => router.push(ROUTES.brokers(slug))} className="mt-2 w-full rounded-lg border border-line py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
+                <button type="button" onClick={() => router.push(ROUTES.brokers(slug))} className="mt-2 w-full rounded-lg app-border py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
                   Return to Broker
                 </button>
               )}

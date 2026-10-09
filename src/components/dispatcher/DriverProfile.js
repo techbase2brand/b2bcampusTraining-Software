@@ -15,7 +15,7 @@ export default function DriverProfile({ driverId, onBack, highlight }) {
       </GameButton>
       <h1 className="mt-5 text-2xl font-extrabold text-ink">{d.name}</h1>
 
-      <dl className="mt-5 max-w-xl divide-y divide-line/60 rounded-2xl border border-line bg-surface px-5">
+      <dl className="mt-5 max-w-xl divide-y divide-line/60 rounded-2xl app-border bg-surface px-5">
         <Row label="Driver ID" value={d.id} />
         <Row label="Assigned Truck" value={d.truckId} />
         <Row
@@ -46,7 +46,7 @@ function Row({ label, value, boxed }) {
   return (
     <div
       className={`flex items-center justify-between gap-4 py-3 ${
-        boxed ? "rounded-lg border border-line bg-surface px-4" : ""
+        boxed ? "rounded-lg app-border bg-surface px-4" : ""
       }`}
     >
       <dt className="text-sm text-ink-dim">{label}</dt>

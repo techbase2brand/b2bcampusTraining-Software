@@ -31,7 +31,7 @@ export default function CompatibilityReview({ m, load, highlight }) {
           type="button"
           disabled={!unrevealed.length}
           onClick={() => m.revealChecks(load.id, unrevealed)}
-          className="rounded-md border border-line px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-cyan-bright transition-colors hover:border-cyan disabled:border-transparent disabled:text-ink-dim"
+          className="rounded-md app-border px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-cyan-bright transition-colors hover:border-cyan disabled:border-transparent disabled:text-ink-dim"
         >
           Check All
         </button>
@@ -41,11 +41,11 @@ export default function CompatibilityReview({ m, load, highlight }) {
         {results.map((r) => {
           const shown = revealed.includes(r.code);
           const glow = (r.code === "weight" && highlight === "filter-weight") || (["timing", "hos"].includes(r.code) && highlight === "load-results");
-          const tone = !shown || r.passed === null ? "border-line/70 bg-navy-900/60" : r.passed ? "border-success/30 bg-success/5" : "border-gold/40 bg-gold/5";
+          const tone = !shown || r.passed === null ? " bg-navy-900/60" : r.passed ? "app-border-success bg-success/5" : "app-border-warning bg-gold/5";
           return (
             <li key={r.code}>
               <TaskHighlight active={glow} className="p-0.5">
-                <div className={`rounded-lg border px-2.5 py-1.5 transition-colors ${tone}`}>
+                <div className={`rounded-lg app-border px-2.5 py-1.5 transition-colors ${tone}`}>
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold text-ink">{r.label}</p>
                     {shown ? (
@@ -55,7 +55,7 @@ export default function CompatibilityReview({ m, load, highlight }) {
                         type="button"
                         onClick={() => m.revealChecks(load.id, [r.code])}
                         aria-label={`Check ${r.label}`}
-                        className="rounded-md border border-line bg-surface-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-cyan-bright transition-colors hover:border-cyan"
+                        className="rounded-md app-border bg-surface-2 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-cyan-bright transition-colors hover:border-cyan"
                       >
                         Check
                       </button>

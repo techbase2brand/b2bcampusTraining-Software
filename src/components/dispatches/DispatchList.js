@@ -18,7 +18,7 @@ const fmtDate = (iso) => (iso ? new Date(iso).toLocaleString("en-US", { month: "
 // the Dispatches hub, so both always show the same thing.
 export default function DispatchList({ state, onOpen, currentSlug = null, detailed = false }) {
   const records = [...getDispatches(state)].sort((a, b) => b.sequenceNumber - a.sequenceNumber).map(describeDispatch);
-  if (records.length === 0) return <p className="rounded-xl border border-dashed border-line px-3 py-6 text-center text-sm text-ink-dim">No dispatches yet. Start one from the Load Board.</p>;
+  if (records.length === 0) return <p className="rounded-xl app-border border-dashed px-3 py-6 text-center text-sm text-ink-dim">No dispatches yet. Start one from the Load Board.</p>;
 
   return (
     <div className="space-y-4">
@@ -32,7 +32,7 @@ export default function DispatchList({ state, onOpen, currentSlug = null, detail
             </h3>
             <ul className="mt-1.5 space-y-1.5">
               {rows.map((r) => (
-                <li key={r.slug} className={`rounded-xl border p-2.5 ${r.slug === currentSlug ? "border-cyan-bright bg-cyan/10" : "border-line bg-navy-900/60"}`}>
+                <li key={r.slug} className={`rounded-xl app-border p-2.5 ${r.slug === currentSlug ? "app-border-active bg-cyan/10" : " bg-navy-900/60"}`}>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <p className="text-sm font-extrabold text-ink">{r.label}</p>
                     <StatusBadge statusId={r.statusId} label={r.statusLabel} />
@@ -40,7 +40,7 @@ export default function DispatchList({ state, onOpen, currentSlug = null, detail
                     <button
                       type="button"
                       onClick={() => onOpen(r.resumeRoute)}
-                      className="ml-auto rounded-md border border-cyan/40 bg-cyan/10 px-2.5 py-1 text-[11px] font-bold text-cyan-bright transition-colors hover:bg-cyan/20"
+                      className="ml-auto rounded-md app-border app-border-active bg-cyan/10 px-2.5 py-1 text-[11px] font-bold text-cyan-bright transition-colors hover:bg-cyan/20"
                     >
                       {r.completed ? "View" : r.slug === currentSlug ? "Open" : "Resume"}
                     </button>

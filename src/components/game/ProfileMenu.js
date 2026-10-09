@@ -13,7 +13,7 @@ import ProgressBar from "./ProgressBar";
 
 function Stat({ label, value }) {
   return (
-    <div className="rounded-lg bg-navy-900/70 px-2.5 py-1.5">
+    <div className="liquid-border liquid-border-subtle rounded-lg bg-navy-900/70 px-2.5 py-1.5">
       <dd className="text-base font-extrabold tabular-nums text-ink">{value}</dd>
       <dt className="text-xs text-ink-dim">{label}</dt>
     </div>
@@ -77,7 +77,7 @@ export default function ProfileMenu({ state, onProfileClick, reversed = false })
           setOpen((v) => !v);
           onProfileClick?.();
         }}
-        className="flex min-w-0 items-center gap-3 rounded-lg p-1 text-left transition hover:bg-surface focus-visible:outline-2 focus-visible:outline-cyan-bright"
+        className="liquid-border liquid-border-subtle flex min-w-0 items-center gap-3 rounded-full app-border app-border-subtle bg-surface/40 p-1 pr-4 text-left backdrop-blur transition hover:border-cyan/40 hover:bg-surface/70 focus-visible:outline-2 focus-visible:outline-cyan-bright"
       >
         <Avatar gender={state.avatarSelection} className="size-10 shrink-0" />
         <span className="min-w-0">
@@ -94,8 +94,9 @@ export default function ProfileMenu({ state, onProfileClick, reversed = false })
             role="dialog"
             aria-labelledby={titleId}
             tabIndex={-1}
-            className="animate-fade-up fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-2xl border border-cyan/30 bg-navy-900 p-4 shadow-[0_0_30px_rgb(32_199_232/0.15),0_16px_40px_rgb(0_0_0/0.5)] outline-none sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-full sm:mt-2 sm:max-h-[80vh] sm:w-[23rem] sm:rounded-2xl"
+            className="modal-in glass-strong liquid-border liquid-border-strong fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-2xl outline-none sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-full sm:mt-2 sm:max-h-[80vh] sm:w-[23rem] sm:rounded-2xl"
           >
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
             <div className="flex items-center gap-3">
               <Avatar gender={student.avatar} className="size-14 shrink-0" />
               <div className="min-w-0">
@@ -127,7 +128,7 @@ export default function ProfileMenu({ state, onProfileClick, reversed = false })
             </dl>
 
             <h3 className="label-xs mt-4">Rewards</h3>
-            <ul className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm font-semibold text-ink">
+            <ul className="liquid-border liquid-border-subtle mt-1.5 flex flex-wrap gap-x-4 gap-y-1 rounded-lg bg-navy-900/60 px-3 py-2 text-sm font-semibold text-ink">
               <li className="flex items-center gap-1.5">
                 <Zap className="size-4 text-cyan-bright" aria-hidden="true" /> {rewards.xp} XP
               </li>
@@ -193,6 +194,7 @@ export default function ProfileMenu({ state, onProfileClick, reversed = false })
                 <LogOut className="size-4 text-danger" aria-hidden="true" /> Log Out
               </button>
             </nav>
+            </div>
           </div>
         </>
       )}

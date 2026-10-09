@@ -161,6 +161,10 @@ export const timelineRows = [
 // The scripted trip. `leg` is where the truck is (pickup = driver -> shipper, loaded = shipper ->
 // receiver) and `frac` how far along that leg. A step with `delay` reports that delay when reached;
 // later step times include it. Step indexes are what the saved state stores.
+// `autoNext` on a step = the truck moves on to the next step by itself (real, compressed time). It
+// stops at every step without it (trip start, arrival at pickup, arrival at delivery) and where it says
+// so: `requiresFlag` waits for that student confirmation, `blockedWhenOpen` waits for a reported
+// delay to be handled. Durations come from the scripted timeline (lib/trackingEngine.js), never from here.
 export const trackingScenario = {
   departAfterMinutes: 15, // after the assignment time
   minLegMinutes: 10,
@@ -171,15 +175,15 @@ export const trackingScenario = {
   maxLocationMatchMiles: 75, // nearest reference city used as the position label
   steps: [
     { id: "ready", status: "ready-for-pickup", leg: "pickup", frac: 0, activity: "Shipment ready for pickup. {driver} is assigned in {location}." },
-    { id: "depart", status: "en-route-pickup", leg: "pickup", frac: 0, activity: "Trip started. {driver} departed {location} for the pickup." },
-    { id: "approach", status: "en-route-pickup", leg: "pickup", frac: 0.5, activity: "Driver en route, near {location}. Pickup ETA {etaPickup}." },
+    { id: "depart", status: "en-route-pickup", leg: "pickup", frac: 0, autoNext: true, activity: "Trip started. {driver} departed {location} for the pickup." },
+    { id: "approach", status: "en-route-pickup", leg: "pickup", frac: 0.5, autoNext: true, activity: "Driver en route, near {location}. Pickup ETA {etaPickup}." },
     { id: "arrive-pickup", status: "arrived-pickup", leg: "pickup", frac: 1, activity: "{driver} arrived at the shipper in {location}." },
-    { id: "loading", status: "loading", leg: "pickup", frac: 1, delay: "loading-delay", activity: "Loading started at the shipper." },
-    { id: "picked-up", status: "picked-up", leg: "loaded", frac: 0, activity: "Pickup complete. Freight is on the truck." },
-    { id: "transit", status: "in-transit", leg: "loaded", frac: 0.15, activity: "In transit near {location}. Delivery ETA {etaDelivery}." },
-    { id: "monitor-1", status: "monitoring", leg: "loaded", frac: 0.4, activity: "Monitoring: driver near {location}. Delivery ETA {etaDelivery}." },
-    { id: "traffic", status: "monitoring", leg: "loaded", frac: 0.62, delay: "traffic", activity: "Monitoring: driver near {location}." },
-    { id: "monitor-2", status: "monitoring", leg: "loaded", frac: 0.85, activity: "Monitoring: driver near {location}. Delivery ETA {etaDelivery}." },
+    { id: "loading", status: "loading", leg: "pickup", frac: 1, delay: "loading-delay", autoNext: true, activity: "Loading started at the shipper." },
+    { id: "picked-up", status: "picked-up", leg: "loaded", frac: 0, autoNext: { requiresFlag: "pickedUp" }, activity: "Pickup complete. Freight is on the truck." },
+    { id: "transit", status: "in-transit", leg: "loaded", frac: 0.15, autoNext: true, activity: "In transit near {location}. Delivery ETA {etaDelivery}." },
+    { id: "monitor-1", status: "monitoring", leg: "loaded", frac: 0.4, autoNext: true, activity: "Monitoring: driver near {location}. Delivery ETA {etaDelivery}." },
+    { id: "traffic", status: "monitoring", leg: "loaded", frac: 0.62, delay: "traffic", autoNext: { blockedWhenOpen: true }, activity: "Monitoring: driver near {location}." },
+    { id: "monitor-2", status: "monitoring", leg: "loaded", frac: 0.85, autoNext: true, activity: "Monitoring: driver near {location}. Delivery ETA {etaDelivery}." },
     { id: "arrive-delivery", status: "arrived-delivery", leg: "loaded", frac: 1, activity: "{driver} arrived at the receiver in {location}." },
   ],
   delays: {
@@ -282,5 +286,32 @@ export const phase7Page = {
     unlocked: "Next: Delivery, Documents & Load Closeout.",
     cta: "Start New Dispatch",
     secondary: "View Dispatch History",
+  },
+};
+
+// Automatic driver updates (not check calls): the driver reports at trip start, as each leg passes the
+// configured thresholds (simulationConfig.trackingTimeScale.driverUpdateThresholds), when a delay slows
+// them down, and on arrival. Variables: {first} {location} {eta} {etaPickup} {etaDelivery}
+// {remaining} (miles left in the trip) {toTarget} (miles to the next stop) {minutes} (delay).
+export const driverUpdateScript = {
+  start: "Driver update: Trip started. I'm heading to the pickup now. Pickup ETA {etaPickup}.",
+  delayed: "Driver update: Traffic has slowed me down. I'm approximately {minutes} minutes behind schedule. Delivery ETA {etaDelivery}.",
+  arrival: {
+    pickup: "Driver update: I've arrived at the pickup in {location}.",
+    delivery: "Driver update: I've arrived at the delivery in {location}.",
+  },
+  progress: {
+    pickup: {
+      25: "Driver update: I'm on the way to the pickup. Everything is running on schedule.",
+      50: "Driver update: About halfway to the pickup, near {location}. Current ETA is {eta}.",
+      75: "Driver update: Getting close to the pickup, about {toTarget} miles to go. No issues at the moment.",
+      90: "Driver update: Almost at the pickup, about {toTarget} miles out.",
+    },
+    delivery: {
+      25: "Driver update: Loaded and rolling. On the way to the delivery and on schedule.",
+      50: "Driver update: About halfway to the delivery, near {location}. Current ETA is {eta}.",
+      75: "Driver update: Getting close to the delivery, about {toTarget} miles to go. No issues at the moment.",
+      90: "Driver update: Almost at the delivery, about {toTarget} miles out.",
+    },
   },
 };

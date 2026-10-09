@@ -33,8 +33,10 @@ export function MissionStepper({ steps, current }) {
 // (when the task needs several things) and its main action.
 // `primary` is { label, onClick, disabled?, icon? } or null when the action lives in the workspace.
 // `where` is a short pointer ("Use the chat below") shown when there is no button.
-// `hideFinishedCta` leaves the finished-state button to the page (one primary action per screen).
-export default function MissionTaskBar({ eyebrow, title, m, primary = null, where = null, doneText = null, hideFinishedCta = false, onComplete }) {
+// `hideFinishedCta` leaves the finished-state button to the page (one primary action per screen);
+// `hideCta` does the same for every button once the mission has started (the page shows the one
+// primary action elsewhere); `hideStepper` hides the mission stepper.
+export default function MissionTaskBar({ eyebrow, title, m, primary = null, where = null, doneText = null, hideFinishedCta = false, hideCta = false, hideStepper = false, onComplete }) {
   const [help, setHelp] = useState(false);
   const { mission, run, task, taskText, feedback, hint, agentLine, checklist } = m;
   const steps = mission.steps ?? [];
@@ -43,6 +45,7 @@ export default function MissionTaskBar({ eyebrow, title, m, primary = null, wher
 
   let cta = primary;
   if (!run.started) cta = { label: "Start Mission", onClick: m.start, icon: ArrowRight };
+  else if (hideCta) cta = null;
   else if (finished) cta = hideFinishedCta ? null : primary ?? { label: "Complete Mission", onClick: onComplete, disabled: !m.allTasksDone };
   const Icon = cta?.icon;
   const showChecklist = run.started && task && checklist;
@@ -50,16 +53,16 @@ export default function MissionTaskBar({ eyebrow, title, m, primary = null, wher
   const agentSays = (showChecklist && missingText(checklist)) || agentLine;
 
   return (
-    <section className="rounded-2xl border border-cyan/15 bg-navy-900 px-4 py-3 shadow-[0_8px_30px_rgb(0_0_0/0.3)]">
+    <section className="glass-strong rounded-2xl px-4 py-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h1 className="text-base font-extrabold uppercase tracking-wide text-ink sm:text-lg">
           <span className="mr-2 text-xs font-bold tracking-[0.25em] text-gold">{eyebrow}</span>
           {title}
         </h1>
-        {steps.length > 0 && <MissionStepper steps={steps} current={current} />}
+        {steps.length > 0 && !hideStepper && <MissionStepper steps={steps} current={current} />}
       </div>
 
-      <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-cyan/30 bg-navy-950/70 px-3 py-2.5">
+      <div className="liquid-border liquid-border--active mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-navy-950/60 px-3 py-2.5">
         <div className="min-w-0 flex-1 basis-72">
           <p className="label-xs text-cyan-bright">{run.completed ? "Mission complete" : finished ? "All tasks done" : run.started ? "Current task" : "Ready?"}</p>
           <p className="mt-0.5 text-sm font-semibold leading-snug text-ink">

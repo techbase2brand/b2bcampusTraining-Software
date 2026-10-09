@@ -6,9 +6,9 @@ export default function FlowStrip({ stepIndex }) {
   return (
     <ol aria-label="How load analysis works" className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
       {phase4Page.flow.map((step, i) => (
-        <li key={step.id} className={`relative rounded-xl border px-3 py-2 transition-colors ${i === Math.min(stepIndex, phase4Page.flow.length - 1) ? "border-cyan/50 bg-cyan/5" : "border-line/70 bg-surface/60"}`}>
+        <li key={step.id} className={`relative rounded-xl app-border px-3 py-2 transition-colors ${i === Math.min(stepIndex, phase4Page.flow.length - 1) ? "app-border-active bg-cyan/5" : " bg-surface/60"}`}>
           <p className="flex items-center gap-2 text-xs font-bold text-ink">
-            <span className="grid size-5 place-items-center rounded-full bg-blue/20 text-[10px] text-cyan-bright">{i + 1}</span>
+            <span className="grid size-5 place-items-center rounded-full bg-blue/20 text-[11px] text-cyan-bright">{i + 1}</span>
             {step.title}
           </p>
           <p className="mt-1 text-[11px] leading-snug text-ink-dim">{step.text}</p>

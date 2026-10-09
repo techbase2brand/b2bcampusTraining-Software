@@ -29,7 +29,7 @@ export default function ShortlistPanel({ m, highlight }) {
             <span className={ready ? "text-success" : "text-gold-bright"}>{loads.length}</span> / {max} loads shortlisted
             <span className="font-normal normal-case text-ink-dim">(min {min})</span>
             {loads.length > 0 && (
-              <button type="button" onClick={m.clearShortlist} className="rounded-md border border-line px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
+              <button type="button" onClick={m.clearShortlist} className="rounded-md app-border px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
                 Clear
               </button>
             )}
@@ -37,13 +37,13 @@ export default function ShortlistPanel({ m, highlight }) {
         </div>
 
         {loads.length === 0 ? (
-          <p className="mt-2.5 rounded-lg border border-dashed border-line px-3 py-4 text-center text-xs text-ink-dim">
+          <p className="mt-2.5 rounded-lg app-border border-dashed px-3 py-4 text-center text-xs text-ink-dim">
             No loads shortlisted yet. View a load, review its compatibility, then shortlist the suitable ones.
           </p>
         ) : (
           <ul className="mt-2.5 grid gap-2.5 md:grid-cols-3">
             {loads.map((load) => (
-              <li key={load.id} className="rounded-lg border border-success/30 bg-navy-900/60 p-2.5 transition-colors hover:border-success/60">
+              <li key={load.id} className="rounded-lg app-border app-border-success bg-navy-900/60 p-2.5 transition-colors hover:border-success/60">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-bold text-ink">{load.referenceNumber}</span>
                   <span className="text-sm font-extrabold tabular-nums text-success">{formatCurrency(load.rate)}</span>

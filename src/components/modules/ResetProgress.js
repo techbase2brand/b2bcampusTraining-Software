@@ -40,7 +40,7 @@ export default function ResetProgress({ onReset }) {
             onChange={(e) => setTyped(e.target.value)}
             autoComplete="off"
             aria-label={`Type ${RESET_WORD} to confirm`}
-            className="mt-1 h-10 w-full rounded-lg border border-line bg-navy-900 px-3 text-sm text-ink outline-none focus:border-danger"
+            className="mt-1 h-10 w-full rounded-lg app-border bg-navy-900 px-3 text-sm text-ink outline-none focus:border-danger"
           />
         </label>
         <div className="mt-5 grid grid-cols-2 gap-2">
@@ -51,7 +51,7 @@ export default function ResetProgress({ onReset }) {
             type="button"
             disabled={!isResetConfirmed(typed)}
             onClick={onReset}
-            className="rounded-lg border border-danger bg-danger px-4 py-2.5 text-sm font-bold uppercase text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg app-border app-border-error bg-danger px-4 py-2.5 text-sm font-bold uppercase text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
           >
             RESET EVERYTHING
           </button>

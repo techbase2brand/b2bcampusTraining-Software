@@ -34,7 +34,7 @@ export const OPS_KEYS = [
   "assignedTruckId", "assignmentTimestamp", "loadAssignmentStatus",
   // tracking (Mission 6)
   "trackingLoadId", "trackingStep", "trackingFlags", "currentShipmentStatus", "lastKnownLocation", "checkCallLog", "activityLog", "delayEvents",
-  "brokerUpdates", "trackingMessages", "trackingNotes", "trackingCommMode", "currentETA", "arrivalConfirmed", "phase7Completed",
+  "brokerUpdates", "trackingSegment", "trackingUpdates", "trackingMessages", "trackingNotes", "trackingCommMode", "currentETA", "arrivalConfirmed", "phase7Completed",
 ];
 const OPS_SET = new Set(OPS_KEYS);
 

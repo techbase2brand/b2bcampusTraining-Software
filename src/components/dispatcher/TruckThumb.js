@@ -10,7 +10,7 @@ export default function TruckThumb({ src = "/images/login-truck.png", className 
       alt=""
       position="22% 60%"
       sizes="320px"
-      className={`border border-line ${className}`}
+      className={`app-border ${className}`}
       fallback={
         <div className="absolute inset-0 grid place-items-center bg-linear-to-br from-surface-2 to-navy-900">
           <Truck className="size-1/2 text-cyan-bright" aria-hidden="true" />

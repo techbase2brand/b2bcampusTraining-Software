@@ -5,13 +5,13 @@ import GameButton from "@/components/game/GameButton";
 export default function MissionIntro({ mission, onStart, onBack }) {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-navy-950/90 p-4 backdrop-blur">
-      <div className="animate-fade-up w-full max-w-2xl rounded-3xl border border-line bg-surface-2 p-6 sm:p-8">
+      <div className="animate-fade-up w-full max-w-2xl rounded-3xl app-border bg-surface-2 p-6 sm:p-8">
         <p className="text-xs font-bold tracking-[0.3em] text-gold">MISSION 01</p>
         <h1 className="mt-1 text-3xl font-extrabold text-ink">{mission.title}</h1>
 
         <div className="mt-6 flex items-start gap-4">
           <TrainingAgentSlot size="sm" />
-          <p className="rounded-2xl rounded-tl-none border border-cyan/40 bg-navy-900 p-4 text-sm text-ink">
+          <p className="rounded-2xl rounded-tl-none app-border app-border-active bg-navy-900 p-4 text-sm text-ink">
             {mission.intro}
           </p>
         </div>

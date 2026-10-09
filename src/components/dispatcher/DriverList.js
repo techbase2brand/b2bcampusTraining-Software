@@ -12,13 +12,13 @@ export default function DriverList({ onSelect }) {
     <div>
       <h1 className="text-2xl font-extrabold text-ink">Drivers</h1>
       <p className="mt-1 text-sm text-ink-dim">Select a driver to open their profile.</p>
-      <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(min(100%,16.5rem),1fr))] gap-3 xl:gap-4">
         {drivers.map((d) => (
           <button
             key={d.id}
             type="button"
             onClick={() => onSelect(d.id)}
-            className="rounded-2xl border border-line bg-surface p-4 text-left transition hover:border-cyan"
+            className="rounded-2xl app-border bg-surface p-4 text-left transition hover:border-cyan"
           >
             <div className="flex items-center justify-between">
               <span className="font-bold text-ink">{d.name}</span>

@@ -8,8 +8,8 @@ export function orderChips(chips, checklist, covered = []) {
 }
 
 export const chipClass = (q) =>
-  `rounded-full border px-2.5 py-1 text-xs transition-colors disabled:opacity-40 ${
-    q.needed ? "border-cyan bg-cyan/10 font-semibold text-cyan-bright" : q.covered ? "border-line/60 bg-navy-900/60 text-ink-dim" : "border-line bg-navy-900 text-ink hover:border-cyan hover:text-cyan-bright"
+  `rounded-full app-border px-2.5 py-1 text-xs transition-colors disabled:opacity-40 ${
+    q.needed ? "app-border-active bg-cyan/10 font-semibold text-cyan-bright" : q.covered ? "app-border-subtle bg-navy-900/60 text-ink-dim" : " bg-navy-900 text-ink hover:border-cyan hover:text-cyan-bright"
   }`;
 
 export const chipLabel = (q) => (q.covered ? `✓ ${q.label}` : q.label);

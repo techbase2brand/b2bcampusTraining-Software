@@ -17,13 +17,13 @@ export default function JourneyStep({ onNext, onBack }) {
           return (
             <Fragment key={p.id}>
               <li
-                className={`flex-1 rounded-2xl border p-5 ${
+                className={`flex-1 rounded-2xl app-border p-5 ${
                   current
-                    ? "border-blue bg-surface-2 shadow-[0_0_28px_rgb(38_140_255/0.3)]"
-                    : "border-line bg-surface"
+                    ? "app-border-active bg-surface-2 shadow-[0_0_28px_rgb(38_140_255/0.3)]"
+                    : " bg-surface"
                 }`}
               >
-                <span className={`mx-auto grid size-11 place-items-center rounded-full border border-line bg-navy-900 ${p.tone}`}>
+                <span className={`mx-auto grid size-11 place-items-center rounded-full app-border bg-navy-900 ${p.tone}`}>
                   <Icon className="size-5" aria-hidden="true" />
                 </span>
                 <p className="mt-3 text-xs font-bold text-ink-dim">PHASE {i + 1}</p>

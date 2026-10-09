@@ -7,6 +7,7 @@ import { simulationConfig } from "@/data/simulationConfig";
 import { formatLocation } from "@/lib/loadSelectors";
 import { addMinutes, formatSimClock, parseSimTime } from "@/lib/text";
 import GameButton from "@/components/game/GameButton";
+import { scrollToLatest } from "@/lib/chatScroll";
 import { orderChips, chipClass, chipLabel } from "@/lib/chipOrder";
 import TaskHighlight from "@/components/dispatcher/TaskHighlight";
 import TrainingFeedback from "@/components/training/TrainingFeedback";
@@ -20,13 +21,14 @@ const VISIBLE_CHIPS = 4;
 // training topics by the engine (lib/brokerChat.js); the broker's answers are deterministic.
 export default function BrokerChat({ m, draft, setDraft, highlight, mode, setMode }) {
   const [popover, setPopover] = useState(false);
-  const endRef = useRef(null);
+  const logRef = useRef(null);
+  const inputRef = useRef(null);
   const broker = brokers.find((b) => b.id === m.viewBrokerId) ?? null;
   const messages = m.comms.messages.filter((msg) => msg.channel === "chat");
   const canChat = m.correctSelected && broker?.id === m.cc.broker.id;
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
+    scrollToLatest(logRef.current);
   }, [messages.length]);
 
   function submit(e) {
@@ -34,6 +36,7 @@ export default function BrokerChat({ m, draft, setDraft, highlight, mode, setMod
     if (!draft.trim() || !canChat) return;
     m.send(draft, "chat");
     setDraft("");
+    inputRef.current?.focus({ preventScroll: true }); // keep typing, without scrolling the page
   }
 
   if (!m.run.started) {
@@ -97,7 +100,7 @@ export default function BrokerChat({ m, draft, setDraft, highlight, mode, setMod
       </header>
 
       {!canChat && (
-        <div className="m-3 flex items-start gap-2 rounded-lg border border-gold/40 bg-gold/10 p-2.5 text-xs text-ink">
+        <div className="m-3 flex items-start gap-2 rounded-lg app-border app-border-warning bg-gold/10 p-2.5 text-xs text-ink">
           <Lock className="mt-0.5 size-3.5 shrink-0 text-gold-bright" aria-hidden="true" />
           This broker is not associated with your selected load, so there is nothing to discuss. Check the load details and select the right broker.
         </div>
@@ -109,25 +112,24 @@ export default function BrokerChat({ m, draft, setDraft, highlight, mode, setMod
         </div>
       ) : (
         <>
-      <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-3 py-3" role="log" aria-live="polite" aria-label="Conversation">
+      <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-3 py-3" ref={logRef} role="log" aria-live="polite" aria-label="Conversation">
         {messages.map((msg, i) => {
           const mine = msg.from === "student";
           return (
-            <div key={i} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+            <div key={i} className={`msg-in flex ${mine ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[78%] ${mine ? "text-right" : ""}`}>
                 <p
                   className={`inline-block rounded-2xl px-3 py-2 text-left text-[13px] leading-snug ${
-                    mine ? "rounded-br-sm bg-blue text-white" : "rounded-bl-sm border border-line bg-surface-2 text-ink"
+                    mine ? "rounded-br-sm bubble-me" : "rounded-bl-sm bubble-them text-ink"
                   }`}
                 >
                   {msg.text}
                 </p>
-                <p className="mt-0.5 px-1 text-[10px] text-ink-dim/70">{formatSimClock(addMinutes(CLOCK_START, 12 + i * 2))}</p>
+                <p className="mt-0.5 px-1 text-[11px] text-ink-dim/70">{formatSimClock(addMinutes(CLOCK_START, 12 + i * 2))}</p>
               </div>
             </div>
           );
         })}
-        <div ref={endRef} />
       </div>
 
       {m.coach && messages.length > 1 && (
@@ -156,13 +158,13 @@ export default function BrokerChat({ m, draft, setDraft, highlight, mode, setMod
                 onClick={() => setPopover((v) => !v)}
                 aria-expanded={popover}
                 aria-haspopup="true"
-                className="flex items-center gap-0.5 rounded-full border border-cyan/40 bg-cyan/10 px-2 py-0.5 text-[10px] font-semibold text-cyan-bright"
+                className="flex items-center gap-0.5 rounded-full app-border app-border-active bg-cyan/10 px-2 py-0.5 text-[11px] font-semibold text-cyan-bright"
               >
                 +{rest.length} more <ChevronUp className={`size-3 transition-transform ${popover ? "" : "rotate-180"}`} aria-hidden="true" />
               </button>
             )}
             {popover && (
-              <ul className="absolute bottom-full left-0 z-20 mb-1 w-72 max-w-full space-y-0.5 rounded-xl border border-line bg-surface-2 p-1.5 shadow-[0_10px_30px_rgb(0_0_0/0.5)]">
+              <ul className="absolute bottom-full left-0 z-20 mb-1 w-72 max-w-full space-y-0.5 rounded-xl app-border bg-surface-2 p-1.5 shadow-[0_10px_30px_rgb(0_0_0/0.5)]">
                 {rest.map((q) => (
                   <li key={q.id}>
                     <button
@@ -182,14 +184,15 @@ export default function BrokerChat({ m, draft, setDraft, highlight, mode, setMod
             )}
           </div>
 
-          <form onSubmit={submit} className="flex items-center gap-2">
+          <form onSubmit={submit} className="liquid-border liquid-on-focus flex items-center gap-2 rounded-xl">
             <input
+              ref={inputRef}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               disabled={!canChat}
               aria-label="Type your message"
               placeholder={canChat ? "Type your message..." : "Select the correct broker to chat"}
-              className="h-9 min-w-0 flex-1 rounded-lg border border-line bg-navy-900 px-3 text-sm text-ink outline-none transition-colors placeholder:text-ink-dim/70 focus:border-cyan focus:ring-1 focus:ring-cyan/40 disabled:opacity-50"
+              className="h-9 min-w-0 flex-1 rounded-lg app-border bg-navy-900 px-3 text-sm text-ink outline-none transition-colors placeholder:text-ink-dim/70 focus:border-cyan focus:ring-1 focus:ring-cyan/40 disabled:opacity-50"
             />
             <button
               type="submit"

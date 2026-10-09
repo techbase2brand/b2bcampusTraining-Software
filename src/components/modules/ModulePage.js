@@ -17,7 +17,7 @@ const ICONS = { "ai-assistant": Sparkles, reports: BarChart3, learning: Graduati
 
 function Stat({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-xl border border-line bg-navy-900/60 p-3">
+    <div className="rounded-xl app-border bg-navy-900/60 p-3">
       <Icon className="size-4 text-cyan-bright" aria-hidden="true" />
       <p className="mt-1 text-xl font-extrabold tabular-nums text-ink">{value}</p>
       <p className="label-xs">{label}</p>
@@ -43,7 +43,7 @@ function Extras({ id, state, router, reset }) {
     return (
       <ul className="mt-4 space-y-1.5" aria-label="Missions">
         {missionRows.map((l) => (
-          <li key={l.id} className="flex items-center gap-2 rounded-lg border border-line bg-navy-900/60 px-3 py-2 text-sm">
+          <li key={l.id} className="flex items-center gap-2 rounded-lg app-border bg-navy-900/60 px-3 py-2 text-sm">
             {done(l) ? <CheckCircle2 className="size-4 text-success" aria-label="Completed" /> : <Circle className="size-4 text-ink-dim" aria-label="Not completed" />}
             <span className="min-w-0 flex-1 truncate font-semibold text-ink">
               Level {l.id}: {l.title}
@@ -58,7 +58,7 @@ function Extras({ id, state, router, reset }) {
   }
   if (id === "settings") {
     return (
-      <div className="mt-4 rounded-xl border border-line bg-navy-900/60 p-3 text-sm">
+      <div className="mt-4 rounded-xl app-border bg-navy-900/60 p-3 text-sm">
         <p className="text-ink">
           <span className="label-xs mr-2">Name</span>
           {state.profile?.name}
@@ -99,16 +99,16 @@ export default function ModulePage({ moduleId }) {
   return (
     <DispatcherLayout activeId={mod.navId}>
       <div className="mx-auto max-w-5xl space-y-4">
-        <section className="rounded-2xl border border-cyan/15 bg-navy-900 p-5 shadow-[0_8px_30px_rgb(0_0_0/0.3)]">
+        <section className="rounded-2xl app-border app-border-subtle bg-navy-900 p-5 shadow-[0_8px_30px_rgb(0_0_0/0.3)]">
           <div className="flex flex-wrap items-center gap-3">
             <span className="grid size-11 place-items-center rounded-xl bg-blue/25 text-cyan-bright">
               <Icon className="size-5" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold">{mod.eyebrow}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-gold">{mod.eyebrow}</p>
               <h1 className="text-xl font-extrabold text-ink sm:text-2xl">{mod.title}</h1>
             </div>
-            <span className="rounded-full border border-cyan/40 bg-cyan/10 px-2.5 py-1 text-[11px] font-bold text-cyan-bright">{mod.badge}</span>
+            <span className="rounded-full app-border app-border-active bg-cyan/10 px-2.5 py-1 text-[11px] font-bold text-cyan-bright">{mod.badge}</span>
           </div>
           <p className="mt-3 max-w-2xl text-sm text-ink-dim">{mod.subtitle}</p>
           <Extras id={moduleId} state={state} router={router} reset={reset} />

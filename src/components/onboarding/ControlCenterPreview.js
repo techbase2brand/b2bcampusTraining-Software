@@ -24,9 +24,9 @@ export default function ControlCenterPreview({ onNext, onBack }) {
             return (
               <li
                 key={item.id}
-                className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm ${
+                className={`flex items-center gap-3 rounded-lg app-border px-3 py-2.5 text-sm ${
                   i === 0
-                    ? "border-blue bg-surface-2 font-semibold text-ink"
+                    ? "app-border-active bg-surface-2 font-semibold text-ink"
                     : active
                       ? "border-transparent text-ink"
                       : "border-transparent text-ink-dim opacity-60"
@@ -35,7 +35,7 @@ export default function ControlCenterPreview({ onNext, onBack }) {
                 <Icon className="size-4" aria-hidden="true" />
                 <span className="flex-1">{item.label}</span>
                 {!active && (
-                  <span className="flex items-center gap-1 text-[10px] uppercase text-gold">
+                  <span className="flex items-center gap-1 text-[11px] uppercase text-gold">
                     <Lock className="size-3" aria-hidden="true" />
                     {item.status === "preview" ? "Preview" : "Later"}
                   </span>
@@ -47,12 +47,12 @@ export default function ControlCenterPreview({ onNext, onBack }) {
 
         {/* Mini dashboard mock (decorative) */}
         <div
-          className="rounded-2xl border-2 border-blue/70 bg-navy-900 p-3 shadow-[0_0_30px_rgb(38_140_255/0.25)]"
+          className="rounded-2xl border-2 app-border-active bg-navy-900 p-3 shadow-[0_0_30px_rgb(38_140_255/0.25)]"
           aria-hidden="true"
         >
           <div className="grid grid-cols-4 gap-2">
             {["Trucks", "Drivers", "Loads", "Revenue"].map((l) => (
-              <div key={l} className="rounded-lg border border-line bg-surface p-2">
+              <div key={l} className="rounded-lg app-border bg-surface p-2">
                 <div className="h-1.5 w-8 rounded bg-cyan/60" />
                 <div className="mt-2 h-3 w-6 rounded bg-ink/70" />
                 <p className="mt-1 text-[8px] text-ink-dim">{l}</p>
@@ -60,7 +60,7 @@ export default function ControlCenterPreview({ onNext, onBack }) {
             ))}
           </div>
           <div className="mt-2 grid grid-cols-[1.6fr_1fr] gap-2">
-            <div className="game-grid relative h-40 rounded-lg border border-line bg-surface">
+            <div className="game-grid relative h-40 rounded-lg app-border bg-surface">
               {mapDots.map(([x, y], i) => (
                 <span
                   key={i}
@@ -71,7 +71,7 @@ export default function ControlCenterPreview({ onNext, onBack }) {
             </div>
             <div className="space-y-2">
               {[0, 1, 2].map((n) => (
-                <div key={n} className="h-12 rounded-lg border border-line bg-surface" />
+                <div key={n} className="h-12 rounded-lg app-border bg-surface" />
               ))}
             </div>
           </div>

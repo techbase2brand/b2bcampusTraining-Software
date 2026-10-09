@@ -10,7 +10,7 @@ function Marker({ pos, tone, icon: Icon, label, pulse = false }) {
         {pulse && <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-30" />}
         <Icon className="relative size-3.5 text-navy-950" aria-hidden="true" />
       </span>
-      <span className="absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap rounded bg-navy-950/90 px-1.5 py-0.5 text-[10px] font-semibold text-ink">{label}</span>
+      <span className="absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap rounded bg-navy-950/90 px-1.5 py-0.5 text-[11px] font-semibold text-ink">{label}</span>
     </div>
   );
 }
@@ -26,7 +26,7 @@ export default function LiveMap({ m }) {
   const onLoaded = snap.leg === "loaded";
   return (
     <section aria-label="Live map" className="panel overflow-hidden">
-      <div className="relative aspect-video min-h-64 w-full lg:aspect-auto lg:h-[calc(100vh-24rem)] lg:min-h-[24rem]">
+      <div className="relative aspect-video min-h-72 w-full">
         <GameImage src="/images/levelmap-bg.png" alt="" sizes="60vw" className="absolute inset-0" fallback={<div className="game-grid absolute inset-0 bg-navy-900" />} />
         <div className="absolute inset-0 bg-navy-950/35" />
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
@@ -38,14 +38,14 @@ export default function LiveMap({ m }) {
         <Marker pos={pickup} tone="bg-success text-success" icon={MapPin} label={`Pickup · ${tl.pickupLoc.city}`} />
         <Marker pos={truck} tone="bg-gold-bright text-gold-bright" icon={Truck} label={m.entry.driver.name.split(" ")[0]} pulse />
 
-        <div className="absolute left-2 top-2 z-20 flex items-center gap-2 rounded-lg border border-cyan/30 bg-navy-950/85 px-2.5 py-1.5 backdrop-blur-sm">
+        <div className="absolute left-2 top-2 z-20 flex items-center gap-2 rounded-lg app-border app-border-subtle bg-navy-950/85 px-2.5 py-1.5 backdrop-blur-sm">
           <Radio className="size-3.5 text-cyan-bright" aria-hidden="true" />
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-cyan-bright">{snap.status}</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-cyan-bright">{snap.status}</p>
             <p className="text-[11px] text-ink">{snap.location}</p>
           </div>
         </div>
-        <div className="absolute bottom-2 right-2 z-20 rounded-lg border border-line bg-navy-950/85 px-2.5 py-1 text-[10px] text-ink-dim">
+        <div className="absolute bottom-2 right-2 z-20 rounded-lg app-border bg-navy-950/85 px-2.5 py-1 text-[11px] text-ink-dim">
           {load.referenceNumber} · <span className="font-semibold text-ink">{snap.remainingMiles} mi</span> to delivery · simulated position
         </div>
       </div>

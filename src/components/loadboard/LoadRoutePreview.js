@@ -11,7 +11,7 @@ function Marker({ loc, tone, icon: Icon, label }) {
       <span className={`grid size-6 place-items-center rounded-full border-2 border-navy-950 shadow-[0_0_12px_currentColor] ${tone}`}>
         <Icon className="size-3 text-navy-950" aria-hidden="true" />
       </span>
-      <span className="absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap rounded bg-navy-950/90 px-1.5 py-0.5 text-[10px] font-semibold text-ink">
+      <span className="absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap rounded bg-navy-950/90 px-1.5 py-0.5 text-[11px] font-semibold text-ink">
         {label}
       </span>
     </div>
@@ -38,7 +38,7 @@ export default function LoadRoutePreview({ load }) {
         <Route className="size-3.5 text-cyan-bright" aria-hidden="true" /> Route Preview
       </h2>
 
-      <div className="relative mt-2.5 aspect-16/9 overflow-hidden rounded-lg border border-line">
+      <div className="relative mt-2.5 aspect-16/9 overflow-hidden rounded-lg app-border ">
         <GameImage
           src="/images/levelmap-bg.png"
           alt=""

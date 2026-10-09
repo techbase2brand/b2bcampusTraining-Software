@@ -5,9 +5,9 @@ import { formatCurrency } from "@/lib/text";
 import { formatLocation } from "@/lib/loadSelectors";
 
 const TONE = {
-  info: { box: "border-cyan/30 bg-cyan/5", icon: Info, color: "text-cyan-bright" },
-  warn: { box: "border-gold/40 bg-gold/10", icon: AlertTriangle, color: "text-gold-bright" },
-  danger: { box: "border-danger/40 bg-danger/10", icon: OctagonAlert, color: "text-danger" },
+  info: { box: "app-border-subtle bg-cyan/5", icon: Info, color: "text-cyan-bright" },
+  warn: { box: "app-border-warning bg-gold/10", icon: AlertTriangle, color: "text-gold-bright" },
+  danger: { box: "app-border-error bg-danger/10", icon: OctagonAlert, color: "text-danger" },
 };
 
 // Operational alerts derived from the simulation state (never random, never from the future).
@@ -17,13 +17,13 @@ export function AlertsPanel({ m }) {
     <section aria-label="Alerts" className="panel p-3">
       <h2 className="flex items-center justify-between text-sm font-extrabold text-ink">
         Alerts
-        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${alerts.length ? "bg-gold/15 text-gold-bright" : "bg-surface-2 text-ink-dim"}`}>{alerts.length}</span>
+        <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${alerts.length ? "bg-gold/15 text-gold-bright" : "bg-surface-2 text-ink-dim"}`}>{alerts.length}</span>
       </h2>
       <ul className="mt-2 space-y-1.5" aria-live="polite">
         {alerts.map((a) => {
           const tone = TONE[a.tone];
           return (
-            <li key={a.id} className={`flex gap-2 rounded-lg border px-2.5 py-1.5 ${tone.box}`}>
+            <li key={a.id} className={`flex gap-2 rounded-lg app-border px-2.5 py-1.5 ${tone.box}`}>
               <tone.icon className={`mt-0.5 size-3.5 shrink-0 ${tone.color}`} aria-hidden="true" />
               <div className="min-w-0">
                 <p className={`text-[11px] font-bold ${tone.color}`}>{a.title}</p>
@@ -32,7 +32,7 @@ export function AlertsPanel({ m }) {
             </li>
           );
         })}
-        {alerts.length === 0 && <li className="rounded-lg border border-dashed border-line p-3 text-center text-xs text-ink-dim">{m.run.started ? "No active alerts." : "Alerts appear once monitoring starts."}</li>}
+        {alerts.length === 0 && <li className="rounded-lg app-border border-dashed p-3 text-center text-xs text-ink-dim">{m.run.started ? "No active alerts." : "Alerts appear once monitoring starts."}</li>}
       </ul>
     </section>
   );
@@ -48,7 +48,7 @@ function Fact({ label, children, wide = false }) {
 }
 
 // Duty status shown for the driver at each point of the trip.
-const DUTY = { "en-route-pickup": "Driving", "in-transit": "Driving", monitoring: "Driving", loading: "On Duty (loading)", "arrived-pickup": "On Duty", "picked-up": "On Duty", "ready-for-pickup": "On Duty", "arrived-delivery": "On Duty" };
+export const DUTY = { "en-route-pickup": "Driving", "in-transit": "Driving", monitoring: "Driving", loading: "On Duty (loading)", "arrived-pickup": "On Duty", "picked-up": "On Duty", "ready-for-pickup": "On Duty", "arrived-delivery": "On Duty" };
 
 // Load facts and the driver's live status (remaining HOS reduces as the trip progresses).
 export function LoadDriverStatus({ m }) {
@@ -59,7 +59,7 @@ export function LoadDriverStatus({ m }) {
       <section aria-label="Load details" className="panel p-3">
         <h2 className="flex items-center justify-between text-sm font-extrabold text-ink">
           Load Details
-          <span className="rounded-full bg-blue/25 px-2 py-0.5 text-[10px] font-bold text-cyan-bright">{snap.status}</span>
+          <span className="rounded-full bg-blue/25 px-2 py-0.5 text-[11px] font-bold text-cyan-bright">{snap.status}</span>
         </h2>
         <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2">
           <Fact label="Load ID">{load.referenceNumber}</Fact>
@@ -135,11 +135,11 @@ export function CheckCallLog({ m }) {
     <section aria-label="Check call log" className="panel p-3">
       <h2 className="flex items-center justify-between text-sm font-extrabold text-ink">
         Check Calls
-        <span className="rounded-full bg-cyan/15 px-2 py-0.5 text-[10px] font-bold text-cyan-bright">{rows.length}</span>
+        <span className="rounded-full bg-cyan/15 px-2 py-0.5 text-[11px] font-bold text-cyan-bright">{rows.length}</span>
       </h2>
       <ul className="mt-2 space-y-1.5">
         {rows.map((c) => (
-          <li key={c.id} className="rounded-lg border border-line/60 bg-navy-900/50 px-2.5 py-1.5 text-[11px] leading-snug">
+          <li key={c.id} className="rounded-lg app-border app-border-subtle bg-navy-900/50 px-2.5 py-1.5 text-[11px] leading-snug">
             <p className="font-semibold text-ink">
               {m.fmt(new Date(c.timestamp))} · {c.status}
             </p>
@@ -163,7 +163,7 @@ export function TaskList({ m }) {
     <section aria-label="Mission tasks" className="panel p-3">
       <h2 className="flex items-center justify-between text-sm font-extrabold text-ink">
         Mission Tasks
-        <span className="text-[10px] font-semibold text-ink-dim">
+        <span className="text-[11px] font-semibold text-ink-dim">
           {run.completedTasks.length} / {mission.tasks.length}
         </span>
       </h2>

@@ -41,7 +41,7 @@ function ShortlistBar({ count, min, validity, missionDone, tasksDone, tasksLeft,
   const text = cta.text;
 
   return (
-    <section aria-label="Shortlist actions" className="sticky bottom-3 z-30 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-cyan/40 bg-navy-900/95 px-4 py-3 shadow-[0_8px_30px_rgb(0_0_0/0.5)] backdrop-blur">
+    <section aria-label="Shortlist actions" className="sticky bottom-3 z-30 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl app-border app-border-active bg-navy-900/95 px-4 py-3 shadow-[0_8px_30px_rgb(0_0_0/0.5)] backdrop-blur">
       <p className="min-w-0 flex-1 basis-64 text-sm font-semibold text-ink" aria-live="polite">
         {text}
       </p>
@@ -65,7 +65,7 @@ export default function LoadBoardPage() {
   if (!unlocked && params.get("preview") !== "1") {
     return (
       <main className="game-backdrop grid min-h-screen place-items-center p-6">
-        <div className="max-w-md rounded-2xl border border-line bg-surface/90 p-8 text-center">
+        <div className="max-w-md rounded-2xl app-border bg-surface/90 p-8 text-center">
           <Lock className="mx-auto size-10 text-gold" aria-hidden="true" />
           <h1 className="mt-4 text-xl font-extrabold text-ink">Finding Loads is locked</h1>
           <p className="mt-2 text-sm text-ink-dim">Complete Mission 01 (Dispatcher Desk Setup) to unlock the Load Board.</p>
@@ -126,9 +126,9 @@ function LoadBoard() {
       footer={footer}
     >
       <div className="mx-auto max-w-[110rem] space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-cyan/25 bg-navy-900/80 px-4 py-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl app-border app-border-subtle bg-navy-900/80 px-4 py-2">
           <p className="text-sm font-extrabold uppercase tracking-wide text-ink">
-            <span className="mr-2 text-[10px] tracking-[0.3em] text-gold">NEW DISPATCH</span>
+            <span className="mr-2 text-[11px] tracking-[0.3em] text-gold">NEW DISPATCH</span>
             Dispatch #{String(nextSequenceNumber(state)).padStart(3, "0")}
           </p>
           <p className="text-xs text-ink-dim">
@@ -140,12 +140,12 @@ function LoadBoard() {
           </p>
         </div>
         {creating && (
-          <p role="status" className="rounded-xl border border-success/40 bg-success/10 px-4 py-2 text-sm font-semibold text-success">
+          <p role="status" className="rounded-xl app-border app-border-success bg-success/10 px-4 py-2 text-sm font-semibold text-success">
             Dispatch #{String(Number(creating.slug.slice(-4))).padStart(3, "0")} created. Taking you to Load Analysis.
           </p>
         )}
         {createError && (
-          <p role="alert" className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-2 text-sm font-semibold text-danger">
+          <p role="alert" className="rounded-xl app-border app-border-error bg-danger/10 px-4 py-2 text-sm font-semibold text-danger">
             {createError}
           </p>
         )}
@@ -154,7 +154,7 @@ function LoadBoard() {
 
         <section
           aria-label={phase3Page.boardTitle}
-          className="rounded-2xl border border-cyan/25 bg-navy-900/80 p-3 shadow-[0_0_40px_rgb(32_199_232/0.08),0_10px_30px_rgb(0_0_0/0.35)]"
+          className="rounded-2xl app-border app-border-subtle bg-navy-900/80 p-3 shadow-[0_0_40px_rgb(32_199_232/0.08),0_10px_30px_rgb(0_0_0/0.35)]"
         >
           <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-line/70">
             <div className="flex items-center gap-2 pb-2">
@@ -173,10 +173,10 @@ function LoadBoard() {
                     role="tab"
                     aria-selected={active}
                     onClick={() => m.applyFilters({ ...filters, sourceId: src.id })}
-                    className={`rounded-t-lg border border-b-0 px-3.5 py-2 text-xs font-semibold transition-colors ${
+                    className={`rounded-t-lg app-border border-b-0 px-3.5 py-2 text-xs font-semibold transition-colors ${
                       active
-                        ? "border-blue bg-linear-to-b from-blue to-[#1f7bff] text-white shadow-[0_0_16px_rgb(38_140_255/0.35)]"
-                        : "border-line bg-surface/70 text-ink-dim hover:bg-surface-2 hover:text-ink"
+                        ? "app-border-active bg-linear-to-b from-blue to-[#1f7bff] text-white shadow-[0_0_16px_rgb(38_140_255/0.35)]"
+                        : " bg-surface/70 text-ink-dim hover:bg-surface-2 hover:text-ink"
                     }`}
                   >
                     {src.label}
@@ -189,7 +189,7 @@ function LoadBoard() {
           <div className="mt-3 space-y-3">
             <LoadFilters key={JSON.stringify(filters)} applied={filters} onApply={m.applyFilters} onReset={m.reset} highlight={highlight} />
 
-            <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1fr)_26rem]">
+            <div className="grid items-start gap-3 min-[1280px]:grid-cols-[minmax(0,1fr)_clamp(19rem,26vw,26rem)]">
               <LoadResultsTable results={results} m={m} onApply={m.applyFilters} onReset={m.reset} highlight={highlight} />
               <div className="space-y-3">
                 <LoadRoutePreview load={selectedLoad} />
@@ -205,7 +205,7 @@ function LoadBoard() {
           </div>
         </section>
 
-        <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="grid items-stretch gap-4 min-[1280px]:grid-cols-[minmax(0,1fr)_clamp(18rem,22vw,22rem)]">
           <ShortlistPanel m={m} highlight={highlight} />
           <Phase3MissionPanel m={m} />
         </div>

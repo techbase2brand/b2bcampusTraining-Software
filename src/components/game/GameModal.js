@@ -14,17 +14,17 @@ export default function GameModal({ open, onClose, title, children }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/80 p-4 backdrop-blur-sm"
+      className="backdrop-in fixed inset-0 z-50 flex items-center justify-center bg-navy-950/80 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="animate-fade-up w-full max-w-lg rounded-2xl border border-line bg-surface-2 p-6 shadow-2xl"
+        className="modal-in glass-strong liquid-border liquid-border-strong flex max-h-[92dvh] w-[min(90vw,calc(var(--app-modal-width)*0.72))] flex-col rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {children}
+        <div className="min-h-0 flex-1 overflow-y-auto p-[calc(var(--app-card-padding)*1.5)]">{children}</div>
       </div>
     </div>
   );

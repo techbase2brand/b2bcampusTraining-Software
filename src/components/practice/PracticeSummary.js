@@ -40,7 +40,7 @@ export default function PracticeSummary({ slug, children = null }) {
         </ul>
       )}
       {sum.negotiatedDeals > 0 && (
-        <button type="button" onClick={() => setOpen(true)} className="mt-2 w-full rounded-lg border border-line py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
+        <button type="button" onClick={() => setOpen(true)} className="mt-2 w-full rounded-lg app-border py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
           View Comparison
         </button>
       )}
@@ -48,10 +48,10 @@ export default function PracticeSummary({ slug, children = null }) {
 
       <GameDrawer open={open} onClose={() => setOpen(false)} title="Deals Compared" subtitle="Numbers use the agreed rate" width="lg">
         {deals.map((d) => (
-          <article key={d.loadId} className={`rounded-xl border p-3 ${best?.loadId === d.loadId ? "border-success/50 bg-success/5" : "border-line bg-surface"}`}>
+          <article key={d.loadId} className={`rounded-xl app-border p-3 ${best?.loadId === d.loadId ? "app-border-success bg-success/5" : " bg-surface"}`}>
             <header className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-extrabold text-ink">{d.ref}</h3>
-              <span className="flex gap-1.5 text-[10px] font-bold">
+              <span className="flex gap-1.5 text-[11px] font-bold">
                 {d.finalized && <span className="rounded-full bg-cyan/20 px-2 py-0.5 text-cyan-bright">FINAL</span>}
                 {best?.loadId === d.loadId && <span className="rounded-full bg-success/20 px-2 py-0.5 text-success">HIGHEST MARGIN</span>}
               </span>

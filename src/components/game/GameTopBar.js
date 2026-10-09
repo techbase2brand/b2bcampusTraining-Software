@@ -13,12 +13,12 @@ import StatBadge from "./StatBadge";
 // `center` replaces the XP/course bars (e.g. a search field) and moves the profile to the right.
 export default function GameTopBar({ onProfileClick, center, showXp = false }) {
   const { state, ready } = useGameProgress();
-  if (!ready) return <header className="h-16 border-b border-line bg-navy-900" />;
+  if (!ready) return <header className="app-header border-b border-line bg-navy-900" />;
 
   const { profile, currentLevel, xp, nextLevelXp, stars, coins, streak, completedLevels } = state;
 
   return (
-    <header className="relative z-30 flex h-16 items-center justify-between gap-3 border-b border-cyan/10 bg-navy-900/90 shadow-[0_1px_0_rgb(32_199_232/0.08)] px-3 backdrop-blur sm:px-5">
+    <header className="app-header relative z-30 flex items-center justify-between gap-3 border-b border-cyan/10 bg-navy-900/70 px-3 shadow-[0_1px_0_rgb(32_199_232/0.08)] backdrop-blur-xl sm:px-5">
       <ProfileMenu state={state} onProfileClick={onProfileClick} reversed={Boolean(center)} />
 
       {center ? (
@@ -51,7 +51,7 @@ export default function GameTopBar({ onProfileClick, center, showXp = false }) {
           <button
             type="button"
             aria-label="Notifications"
-            className="grid size-9 place-items-center rounded-lg border border-line bg-surface text-ink-dim transition hover:text-cyan-bright"
+            className="grid size-9 place-items-center rounded-lg app-border bg-surface text-ink-dim transition hover:text-cyan-bright"
           >
             <Bell className="size-4" aria-hidden="true" />
           </button>

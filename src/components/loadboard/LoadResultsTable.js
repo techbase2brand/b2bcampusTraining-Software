@@ -29,7 +29,7 @@ export default function LoadResultsTable({ results, m, onApply, onReset, highlig
             <select
               value={filters.sortBy}
               onChange={(e) => onApply({ ...filters, sortBy: e.target.value })}
-              className="h-8 rounded-md border border-line bg-navy-900 px-2 text-xs text-ink outline-none transition-colors focus:border-cyan"
+              className="h-8 rounded-md app-border bg-navy-900 px-2 text-xs text-ink outline-none transition-colors focus:border-cyan"
             >
               {sortOptions.map((o) => (
                 <option key={o.id} value={o.id}>
@@ -43,7 +43,7 @@ export default function LoadResultsTable({ results, m, onApply, onReset, highlig
         {chips.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5 border-b border-line/70 px-3 py-2" aria-label="Active filters">
             {chips.map((chip) => (
-              <span key={chip.id} className="flex items-center gap-0.5 rounded-full border border-cyan/35 bg-cyan/10 py-0.5 pl-2.5 pr-1 text-[11px] text-ink">
+              <span key={chip.id} className="flex items-center gap-0.5 rounded-full app-border app-border-subtle bg-cyan/10 py-0.5 pl-2.5 pr-1 text-[11px] text-ink">
                 {chip.label}
                 <button
                   type="button"
@@ -61,7 +61,7 @@ export default function LoadResultsTable({ results, m, onApply, onReset, highlig
           </div>
         )}
 
-        <div className="max-h-[34rem] overflow-auto">
+        <div className="max-h-[min(34rem,58dvh)] overflow-auto">
           <table className="w-full min-w-168 border-separate border-spacing-0 text-left text-xs">
             <thead>
               <tr>
@@ -69,7 +69,7 @@ export default function LoadResultsTable({ results, m, onApply, onReset, highlig
                   <th
                     key={c.id}
                     scope="col"
-                    className="sticky top-0 z-10 whitespace-nowrap border-b border-line bg-navy-900 px-2.5 py-2 text-[10px] font-bold uppercase tracking-wider text-ink-dim"
+                    className="sticky top-0 z-10 whitespace-nowrap border-b border-line bg-navy-900 px-2.5 py-2 text-[11px] font-bold uppercase tracking-wider text-ink-dim"
                   >
                     {c.label}
                   </th>
@@ -98,7 +98,7 @@ export default function LoadResultsTable({ results, m, onApply, onReset, highlig
                   >
                     <td className="whitespace-nowrap border-b border-line/40 px-2.5 py-2.5">
                       <span className="block text-[13px] font-bold text-ink">{load.referenceNumber}</span>
-                      <span className="mt-0.5 flex min-h-3.5 items-center gap-1 text-[10px] font-semibold uppercase tracking-wide">
+                      <span className="mt-0.5 flex min-h-3.5 items-center gap-1 text-[11px] font-semibold uppercase tracking-wide">
                         {shortlisted && (
                           <span className="flex items-center gap-0.5 text-success">
                             <Check className="size-3" aria-hidden="true" /> Shortlisted
@@ -115,7 +115,7 @@ export default function LoadResultsTable({ results, m, onApply, onReset, highlig
                     <td className="whitespace-nowrap border-b border-line/40 px-2.5 py-2.5 text-ink">{formatLocation(load.originLocationId)}</td>
                     <td className="whitespace-nowrap border-b border-line/40 px-2.5 py-2.5 text-ink">{formatLocation(load.destinationLocationId)}</td>
                     <td className="border-b border-line/40 px-2.5 py-2.5">
-                      <span className="whitespace-nowrap rounded-md border border-line bg-surface-2 px-1.5 py-0.5 text-[11px] text-ink">{load.equipmentType}</span>
+                      <span className="whitespace-nowrap rounded-md app-border bg-surface-2 px-1.5 py-0.5 text-[11px] text-ink">{load.equipmentType}</span>
                     </td>
                     <td className="whitespace-nowrap border-b border-line/40 px-2.5 py-2.5 font-semibold tabular-nums text-ink">{load.weight.toLocaleString("en-US")} lbs</td>
                     <td className="whitespace-nowrap border-b border-line/40 px-2.5 py-2.5 font-semibold tabular-nums text-ink">{load.loadedMiles.toLocaleString("en-US")} mi</td>
@@ -146,7 +146,7 @@ export default function LoadResultsTable({ results, m, onApply, onReset, highlig
         </div>
 
         {results.length === 0 && (
-          <div className="m-3 rounded-xl border border-dashed border-line p-6 text-center text-sm text-ink-dim">
+          <div className="m-3 rounded-xl app-border border-dashed p-6 text-center text-sm text-ink-dim">
             No loads match these filters.{" "}
             <button type="button" onClick={onReset} className="text-cyan-bright hover:underline">
               Reset Filters

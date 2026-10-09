@@ -15,7 +15,7 @@ export default function MechanicsStep({ onNext, onBack }) {
           const Icon = Icons[m.icon];
           return (
             <Fragment key={m.id}>
-              <div className="flex-1 rounded-2xl border border-line bg-surface p-5">
+              <div className="flex-1 rounded-2xl app-border bg-surface p-5">
                 <Icon className={`mx-auto size-12 ${m.tone}`} aria-hidden="true" />
                 <p className="mt-3 text-lg font-bold text-ink">{m.title}</p>
                 <p className="text-xs text-ink-dim">{m.subtitle}</p>

@@ -8,7 +8,7 @@ const tones = {
 export default function StatBadge({ icon: Icon, value, label, tone = "ink" }) {
   return (
     <div
-      className="flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5"
+      className="liquid-border liquid-border-subtle flex items-center gap-1.5 rounded-full app-border app-border-subtle bg-surface/50 px-3 py-1.5 backdrop-blur"
       title={label}
     >
       <Icon className={`size-4 ${tones[tone]}`} aria-hidden="true" />

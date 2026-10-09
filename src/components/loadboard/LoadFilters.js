@@ -11,7 +11,7 @@ import GameButton from "@/components/game/GameButton";
 import TaskHighlight from "@/components/dispatcher/TaskHighlight";
 
 const field =
-  "h-8 w-full min-w-0 rounded-md border border-line bg-navy-900 px-2 text-xs text-ink outline-none transition-colors placeholder:text-ink-dim/60 hover:border-line/80 focus:border-cyan focus:ring-1 focus:ring-cyan/40";
+  "h-8 w-full min-w-0 rounded-md app-border bg-navy-900 px-2 text-xs text-ink outline-none transition-colors placeholder:text-ink-dim/60 hover:border-line/80 focus:border-cyan focus:ring-1 focus:ring-cyan/40";
 const quick = "mt-1 flex items-center gap-1 text-[11px] text-cyan-bright hover:underline";
 const toNumber = (value) => (value === "" ? null : Number(value));
 const toggle = (list, value) => (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
@@ -19,8 +19,8 @@ const toggle = (list, value) => (list.includes(value) ? list.filter((v) => v !==
 function Option({ label, checked, onChange }) {
   return (
     <label
-      className={`flex h-7 cursor-pointer items-center gap-1.5 rounded-md border px-2 text-xs transition-colors ${
-        checked ? "border-cyan/60 bg-cyan/10 text-ink" : "border-line bg-navy-900 text-ink-dim hover:border-line/80 hover:text-ink"
+      className={`flex h-7 cursor-pointer items-center gap-1.5 rounded-md app-border px-2 text-xs transition-colors ${
+        checked ? "app-border-active bg-cyan/10 text-ink" : " bg-navy-900 text-ink-dim hover:border-line/80 hover:text-ink"
       }`}
     >
       <input type="checkbox" className="size-3.5 accent-cyan" checked={checked} onChange={onChange} />

@@ -30,7 +30,7 @@ export default function BestLoadConfirmation({ m, loadId, onCancel, onConfirm })
         <div>
           <h2 className="text-xl font-extrabold text-ink">{selectionCopy.confirmTitle}</h2>
           <p className="mt-1 text-xs text-ink-dim">{selectionCopy.confirmNote}</p>
-          <dl className="mt-4 divide-y divide-line/50 rounded-xl border border-line bg-surface px-3">
+          <dl className="mt-4 divide-y divide-line/50 rounded-xl app-border bg-surface px-3">
             {rows.map(([label, value]) => (
               <div key={label} className="flex items-center justify-between gap-3 py-1.5">
                 <dt className="text-xs text-ink-dim">{label}</dt>

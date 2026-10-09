@@ -42,7 +42,7 @@ export default function OnboardingFlow() {
             <button
               type="button"
               onClick={() => setIndex(LAST)}
-              className="rounded-md border border-line bg-surface px-3 py-1 text-xs text-ink-dim hover:text-cyan-bright"
+              className="rounded-md app-border bg-surface px-3 py-1 text-xs text-ink-dim hover:text-cyan-bright"
             >
               Skip
             </button>

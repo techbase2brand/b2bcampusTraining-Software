@@ -22,7 +22,7 @@ export default function LoadDetailPanel({ load }) {
     return (
       <section aria-label="Selected load details" className="panel p-3">
         <h2 className="panel-title">Selected Load Details</h2>
-        <div className="mt-3 grid place-items-center rounded-lg border border-dashed border-line px-4 py-7 text-center">
+        <div className="mt-3 grid place-items-center rounded-lg app-border border-dashed px-4 py-7 text-center">
           <FileSearch className="size-7 text-ink-dim" aria-hidden="true" />
           <p className="mt-2 text-xs text-ink-dim">{phase3Page.emptyDetails}</p>
         </div>
@@ -38,7 +38,7 @@ export default function LoadDetailPanel({ load }) {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="text-base font-extrabold text-ink">{load.referenceNumber}</h2>
-            <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-success">{load.status.toUpperCase()}</span>
+            <span className="rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-bold tracking-wide text-success">{load.status.toUpperCase()}</span>
           </div>
           <p className="mt-0.5 truncate text-[11px] text-ink-dim">
             {formatLocation(load.originLocationId)} to {formatLocation(load.destinationLocationId)}

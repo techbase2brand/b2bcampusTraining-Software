@@ -13,7 +13,7 @@ import DispatchList from "./DispatchList";
 
 // Compact dispatch context shown on every operational page: which dispatch this is, its load,
 // lane and stage, and a Switch drawer. The slug in the URL is the only source of truth.
-export default function DispatchBar({ slug }) {
+export default function DispatchBar({ slug, extra = null }) {
   const router = useRouter();
   const { state } = useGameProgress();
   const [open, setOpen] = useState(false);
@@ -27,9 +27,9 @@ export default function DispatchBar({ slug }) {
   };
 
   return (
-    <section aria-label="Current dispatch" className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl border border-cyan/25 bg-navy-900/80 px-4 py-2">
+    <section aria-label="Current dispatch" className="glass-strong liquid-border liquid-border--still flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl px-4 py-2">
       <p className="text-sm font-extrabold uppercase tracking-wide text-ink">
-        <span className="mr-2 text-[10px] tracking-[0.3em] text-gold">DISPATCH</span>#{d.number}
+        <span className="mr-2 text-[11px] tracking-[0.3em] text-gold">DISPATCH</span>#{d.number}
       </p>
       <p className="min-w-0 text-xs text-ink">
         {d.reference ? (
@@ -43,6 +43,7 @@ export default function DispatchBar({ slug }) {
       <span className="flex items-center gap-1.5 text-[11px] text-ink-dim">
         {d.stageLabel} <StatusBadge statusId={d.statusId} label={d.statusLabel} />
       </span>
+      {extra}
       {d.completed && (
         <span className="flex items-center gap-1 text-[11px] font-semibold text-gold-bright">
           <Lock className="size-3" aria-hidden="true" /> Completed, read-only
@@ -57,7 +58,7 @@ export default function DispatchBar({ slug }) {
           <Plus className="size-4" aria-hidden="true" /> New Dispatch
         </GameButton>
         <DispatchList state={state} currentSlug={slug} onOpen={go} />
-        <button type="button" onClick={() => go(ROUTES.hub)} className="w-full rounded-lg border border-line py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
+        <button type="button" onClick={() => go(ROUTES.hub)} className="w-full rounded-lg app-border py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
           Open Dispatches page
         </button>
       </GameDrawer>

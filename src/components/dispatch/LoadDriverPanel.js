@@ -15,7 +15,7 @@ function Fact({ label, children, sub, wide = false }) {
     <div className={`min-w-0 ${wide ? "col-span-2" : ""}`}>
       <dt className="label-xs">{label}</dt>
       <dd className="truncate text-xs font-semibold text-ink">{children}</dd>
-      {sub && <dd className="truncate text-[10px] text-ink-dim">{sub}</dd>}
+      {sub && <dd className="truncate text-[11px] text-ink-dim">{sub}</dd>}
     </div>
   );
 }
@@ -31,7 +31,7 @@ export function NegotiatedLoadCard({ m, highlight }) {
     <section aria-label="Negotiated load" className="panel overflow-hidden">
       <div className="flex items-center justify-between gap-2 border-b border-line/70 bg-linear-to-r from-blue/15 to-transparent px-3 py-2">
         <h2 className="text-sm font-extrabold text-ink">Negotiated Load ({v.ref})</h2>
-        <span className="shrink-0 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-success">{m.statusLabel}</span>
+        <span className="shrink-0 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-bold tracking-wide text-success">{m.statusLabel}</span>
       </div>
 
       <div className="flex items-center gap-2.5 px-3 pt-2.5">
@@ -41,7 +41,7 @@ export function NegotiatedLoadCard({ m, highlight }) {
             {v.origin} → {v.destination}
           </p>
           <p className="text-xl font-extrabold leading-tight tabular-nums text-success">{formatCurrency(agreedRate)}</p>
-          <p className="text-[10px] text-ink-dim">
+          <p className="text-[11px] text-ink-dim">
             {better ? `Agreed rate · posted ${formatCurrency(postedRate)}` : "Agreed rate"} · {load.loadedMiles.toLocaleString("en-US")} mi
           </p>
         </div>
@@ -74,7 +74,7 @@ export function NegotiatedLoadCard({ m, highlight }) {
             </GameButton>
           )}
         </TaskHighlight>
-        {!d.loadReviewed && !run.started && <p className="mt-1 text-center text-[10px] text-ink-dim">Start the mission first.</p>}
+        {!d.loadReviewed && !run.started && <p className="mt-1 text-center text-[11px] text-ink-dim">Start the mission first.</p>}
       </div>
     </section>
   );
@@ -84,7 +84,7 @@ function CheckRow({ m, entry, check, revealed, highlight }) {
   const meta = suitabilityChecks.find((c) => c.code === check.code);
   const active = (check.code === "hos" && highlight === "check-hos") || (check.code === "pickup" && highlight === "check-pickup");
   return (
-    <li className="rounded-lg border border-line/60 bg-navy-900/60 px-2 py-1.5">
+    <li className="rounded-lg app-border app-border-subtle bg-navy-900/60 px-2 py-1.5">
       <div className="flex items-center gap-2">
         <span className={`grid size-4 shrink-0 place-items-center rounded-full ${revealed ? (check.passed ? "bg-success text-navy-950" : "bg-danger text-white") : "bg-surface-2 text-ink-dim"}`}>
           {revealed ? check.passed ? <Check className="size-3" aria-label="Passed" /> : <X className="size-3" aria-label="Failed" /> : <Clock className="size-2.5" aria-label="Not checked" />}
@@ -92,7 +92,7 @@ function CheckRow({ m, entry, check, revealed, highlight }) {
         <span className="min-w-0 flex-1 truncate text-xs font-semibold text-ink">{meta.label}</span>
         {!revealed && (
           <TaskHighlight active={active}>
-            <button type="button" disabled={!m.run.started} onClick={() => m.revealChecks(entry.id, [check.code])} className="rounded-md border border-cyan/40 bg-cyan/10 px-2 py-0.5 text-[10px] font-bold text-cyan-bright transition-colors hover:bg-cyan/20 disabled:opacity-40">
+            <button type="button" disabled={!m.run.started} onClick={() => m.revealChecks(entry.id, [check.code])} className="rounded-md app-border app-border-active bg-cyan/10 px-2 py-0.5 text-[11px] font-bold text-cyan-bright transition-colors hover:bg-cyan/20 disabled:opacity-40">
               Check
             </button>
           </TaskHighlight>
@@ -133,7 +133,7 @@ export function DriverDetails({ m, highlight }) {
             {entry.truck.id} · {entry.truck.equipment} · {entry.driver.location}
           </p>
         </div>
-        {selected && <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold text-success">SELECTED</span>}
+        {selected && <span className="rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-bold text-success">SELECTED</span>}
       </div>
 
       <dl className="grid grid-cols-2 gap-x-3 gap-y-2 px-3 py-2.5">
@@ -150,7 +150,7 @@ export function DriverDetails({ m, highlight }) {
             type="button"
             disabled={!m.run.started || shown.length >= suitabilityChecks.length}
             onClick={() => m.revealChecks(entry.id, suitabilityChecks.map((c) => c.code))}
-            className="text-[10px] font-bold text-cyan-bright underline-offset-2 hover:underline disabled:opacity-40"
+            className="text-[11px] font-bold text-cyan-bright underline-offset-2 hover:underline disabled:opacity-40"
           >
             Check all
           </button>
@@ -162,7 +162,7 @@ export function DriverDetails({ m, highlight }) {
         </ul>
 
         {hos && (
-          <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 rounded-lg border border-cyan/25 bg-cyan/5 px-2.5 py-2" aria-label="HOS review">
+          <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 rounded-lg app-border app-border-subtle bg-cyan/5 px-2.5 py-2" aria-label="HOS review">
             <Fact label="HOS left">{hos.remaining}</Fact>
             <Fact label="Drive to pickup">{hos.driveTime}</Fact>
             <Fact label="Arrives">{hos.arrival}</Fact>
@@ -192,14 +192,14 @@ export default function AssignmentSummary({ m, highlight, onOpen }) {
   const locked = d.dispatchSent && !selected;
   const accepted = d.response === "accepted";
   const entry = m.entry;
-  const drawerLink = "mt-2 flex w-full items-center justify-center gap-1 rounded-lg border border-line py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright";
+  const drawerLink = "mt-2 flex w-full items-center justify-center gap-1 rounded-lg app-border py-1.5 text-xs font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright";
 
   return (
     <div className="space-y-3">
       <section aria-label="Negotiated load" className="panel p-3">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-sm font-extrabold text-ink">{vars.ref}</h2>
-          <span className="shrink-0 rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-success">{m.statusLabel}</span>
+          <span className="shrink-0 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-bold tracking-wide text-success">{m.statusLabel}</span>
         </div>
         <p className="mt-1 text-xs font-semibold text-ink">
           {vars.origin} → {vars.destination}
@@ -260,7 +260,7 @@ export default function AssignmentSummary({ m, highlight, onOpen }) {
         )}
       </section>
 
-      <section aria-label="Dispatch status" className={`panel p-3 ${accepted || d.assigned ? "border-success/50" : ""}`}>
+      <section aria-label="Dispatch status" className={`panel p-3 ${accepted || d.assigned ? "app-border-success" : ""}`}>
         {!entry ? (
           <>
             <h2 className="panel-title flex items-center gap-1.5">

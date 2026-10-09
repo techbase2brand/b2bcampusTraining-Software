@@ -19,7 +19,7 @@ const CARD_STYLE = {
 
 function Panel({ title, action, children, className = "", id, icon: Icon }) {
   return (
-    <section id={id} className={`rounded-2xl border border-line bg-surface/90 p-3.5 ${className}`}>
+    <section id={id} className={`rounded-2xl app-border bg-surface/90 p-3.5 ${className}`}>
       <div className="flex items-center justify-between gap-2">
         <h2 className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-ink">
           {Icon && <Icon className="size-3.5 text-cyan-bright" aria-hidden="true" />}
@@ -44,8 +44,8 @@ function Fact({ label, children, wide = false, valueClass = "text-ink" }) {
 // Compact stat tile used by the tracking summary.
 function Tile({ icon: Icon, label, children, wide = false }) {
   return (
-    <div className={`min-w-0 rounded-xl border border-line/70 bg-navy-900/60 px-2.5 py-2 ${wide ? "col-span-2" : ""}`}>
-      <p className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-ink-dim">
+    <div className={`min-w-0 rounded-xl app-border bg-navy-900/60 px-2.5 py-2 ${wide ? "col-span-2" : ""}`}>
+      <p className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-ink-dim">
         <Icon className="size-3" aria-hidden="true" /> {label}
       </p>
       <div className="mt-0.5 truncate text-sm font-bold text-ink">{children}</div>
@@ -67,13 +67,13 @@ export function StatCards({ cards, onNavigate }) {
               <Icon className="size-[1.1rem]" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1 text-left">
-              <p className="truncate text-[10px] font-bold uppercase tracking-wide text-ink-dim">{c.label}</p>
+              <p className="truncate text-[11px] font-bold uppercase tracking-wide text-ink-dim">{c.label}</p>
               <p className="text-2xl font-extrabold tabular-nums leading-none text-ink">{c.value}</p>
-              <p className="mt-1 truncate text-[10px] leading-tight text-ink-dim">{c.supporting}</p>
+              <p className="mt-1 truncate text-[11px] leading-tight text-ink-dim">{c.supporting}</p>
             </div>
           </>
         );
-        const cls = `flex items-center gap-2.5 rounded-xl border border-l-4 border-line bg-surface/90 px-3 py-2.5 ${s.accent} ${i === cards.length - 1 ? "col-span-2 sm:col-span-1" : ""}`;
+        const cls = `flex items-center gap-2.5 glow-card rounded-xl app-border border-l-4 bg-surface/80 px-3 py-2.5 ${s.accent} ${i === cards.length - 1 ? "col-span-2 sm:col-span-1" : ""}`;
         if (c.navId) {
           return (
             <button key={c.id} type="button" onClick={() => onNavigate(c.navId)} className={`${cls} transition-colors hover:bg-surface-2`}>
@@ -104,7 +104,7 @@ export function CurrentShipment({ current, hasPending, actions, onNavigate, onOp
     const target = hasPending ? actions.find((a) => a.navId === "dispatch") : actions.find((a) => a.navId === "load-board");
     return (
       <Panel title="Active Shipment" icon={Truck}>
-        <div className="mt-3 grid place-items-center rounded-xl border border-dashed border-line px-4 py-6 text-center">
+        <div className="mt-3 grid place-items-center rounded-xl app-border border-dashed px-4 py-6 text-center">
           <Truck className="size-7 text-ink-dim" aria-hidden="true" />
           <p className="mt-2 text-sm font-semibold text-ink">{dashboardCopy.emptyShipment}</p>
           {target && (
@@ -118,10 +118,10 @@ export function CurrentShipment({ current, hasPending, actions, onNavigate, onOp
   }
   const canTrack = actions.some((a) => a.navId === "tracking");
   return (
-    <section aria-label="Active shipment" className="overflow-hidden rounded-2xl border border-cyan/30 bg-surface/90 shadow-[0_0_24px_rgb(32_199_232/0.08)]">
+    <section aria-label="Active shipment" className="glass-strong liquid-border liquid-border--still overflow-hidden rounded-2xl">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-line/70 bg-linear-to-r from-blue/20 via-blue/5 to-transparent px-4 py-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold">Active Shipment</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold">Active Shipment</p>
           <p className="flex flex-wrap items-baseline gap-x-3 text-2xl font-extrabold leading-tight text-ink">
             {current.reference}
             <span className="text-sm font-semibold text-ink-dim">
@@ -177,7 +177,7 @@ export function TrackingSummary({ tracking }) {
           </Tile>
         </div>
       ) : (
-        <div className="mt-2.5 flex items-center gap-2.5 rounded-xl border border-dashed border-line px-3 py-3 text-xs text-ink-dim">
+        <div className="mt-2.5 flex items-center gap-2.5 rounded-xl app-border border-dashed px-3 py-3 text-xs text-ink-dim">
           <Radio className="size-4 shrink-0" aria-hidden="true" /> Tracking has not started yet. Location, ETA and check calls appear here once a shipment is moving.
         </div>
       )}
@@ -191,7 +191,7 @@ export function NeedsAttention({ items, onNavigate, onOpenRoute }) {
       {items.length ? (
         <ul className="mt-2.5 space-y-1.5">
           {items.map((a) => (
-            <li key={a.id} className={`flex items-start gap-2 rounded-lg border px-2.5 py-1.5 text-xs leading-snug text-ink ${toneClasses[a.tone]}`}>
+            <li key={a.id} className={`flex items-start gap-2 rounded-lg app-border px-2.5 py-1.5 text-xs leading-snug text-ink ${toneClasses[a.tone]}`}>
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
               <span className="min-w-0 flex-1">{a.text}</span>
               {(a.route || a.navId) && (
@@ -203,7 +203,7 @@ export function NeedsAttention({ items, onNavigate, onOpenRoute }) {
           ))}
         </ul>
       ) : (
-        <p className="mt-2.5 flex items-center gap-2 rounded-lg border border-success/30 bg-success/8 px-3 py-2.5 text-sm font-semibold text-success">
+        <p className="mt-2.5 flex items-center gap-2 rounded-lg app-border app-border-success bg-success/8 px-3 py-2.5 text-sm font-semibold text-success">
           <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" /> {dashboardCopy.allClear}
         </p>
       )}
@@ -220,19 +220,19 @@ export function DispatchOverview({ records, onNavigate, onOpenRoute }) {
       className="scroll-mt-20"
       action={
         <span className="flex items-center gap-1.5">
-          <button type="button" onClick={() => onOpenRoute("/dispatcher/dispatches")} className="rounded-md border border-line px-2 py-0.5 text-[11px] font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
+          <button type="button" onClick={() => onOpenRoute("/dispatcher/dispatches")} className="rounded-md app-border px-2 py-0.5 text-[11px] font-semibold text-ink transition-colors hover:border-cyan hover:text-cyan-bright">
             View all
           </button>
-          <button type="button" onClick={() => onNavigate("load-board")} className="rounded-md border border-cyan/40 bg-cyan/10 px-2 py-0.5 text-[11px] font-bold text-cyan-bright transition-colors hover:bg-cyan/20">
+          <button type="button" onClick={() => onNavigate("load-board")} className="rounded-md app-border app-border-active bg-cyan/10 px-2 py-0.5 text-[11px] font-bold text-cyan-bright transition-colors hover:bg-cyan/20">
             + New Dispatch
           </button>
         </span>
       }
     >
       {records.length ? (
-        <div className="mt-2.5 max-h-72 overflow-auto rounded-xl border border-line/60">
+        <div className="mt-2.5 max-h-72 overflow-auto rounded-xl app-border app-border-subtle">
           <table className="w-full min-w-[58rem] text-left text-xs">
-            <thead className="sticky top-0 bg-navy-900 text-[10px] uppercase tracking-wide text-ink-dim">
+            <thead className="sticky top-0 bg-navy-900 text-[11px] uppercase tracking-wide text-ink-dim">
               <tr>
                 {["Dispatch", "Load", "Driver", "Truck", "Route", "Rate", "Stage", "Status", "ETA", "Action"].map((h) => (
                   <th key={h} className="px-3 py-2 font-semibold">
@@ -259,7 +259,7 @@ export function DispatchOverview({ records, onNavigate, onOpenRoute }) {
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 text-ink-dim">{r.eta ?? "-"}</td>
                   <td className="px-3 py-2">
-                    <button type="button" onClick={() => onOpenRoute(r.resumeRoute)} className="rounded-md border border-cyan/40 bg-cyan/10 px-2 py-0.5 text-[11px] font-bold text-cyan-bright transition-colors hover:bg-cyan/20">
+                    <button type="button" onClick={() => onOpenRoute(r.resumeRoute)} className="rounded-md app-border app-border-active bg-cyan/10 px-2 py-0.5 text-[11px] font-bold text-cyan-bright transition-colors hover:bg-cyan/20">
                       {r.completed ? "View" : "Resume"}
                     </button>
                   </td>
@@ -269,7 +269,7 @@ export function DispatchOverview({ records, onNavigate, onOpenRoute }) {
           </table>
         </div>
       ) : (
-        <p className="mt-2.5 rounded-xl border border-dashed border-line px-3 py-4 text-center text-xs text-ink-dim">No dispatches yet. Start one from the Load Board.</p>
+        <p className="mt-2.5 rounded-xl app-border border-dashed px-3 py-4 text-center text-xs text-ink-dim">No dispatches yet. Start one from the Load Board.</p>
       )}
     </Panel>
   );
@@ -278,15 +278,15 @@ export function DispatchOverview({ records, onNavigate, onOpenRoute }) {
 export function RecentActivity({ events, context }) {
   return (
     <Panel title="Recent Activity" icon={Activity}>
-      {context && <p className="mt-1 truncate text-[10px] text-ink-dim">{context}</p>}
+      {context && <p className="mt-1 truncate text-[11px] text-ink-dim">{context}</p>}
       <ul className="mt-2.5 max-h-52 space-y-1.5 overflow-y-auto pr-1">
         {events.map((e) => (
           <li key={e.id} className="grid grid-cols-[4.75rem_minmax(0,1fr)] gap-2 border-b border-line/40 pb-1.5 text-xs leading-snug last:border-0">
-            <span className="text-[10px] tabular-nums text-ink-dim">{e.time ?? ""}</span>
+            <span className="text-[11px] tabular-nums text-ink-dim">{e.time ?? ""}</span>
             <span className="text-ink">{e.message}</span>
           </li>
         ))}
-        {events.length === 0 && <li className="rounded-lg border border-dashed border-line px-3 py-4 text-center text-xs text-ink-dim">No operational activity yet.</li>}
+        {events.length === 0 && <li className="rounded-lg app-border border-dashed px-3 py-4 text-center text-xs text-ink-dim">No operational activity yet.</li>}
       </ul>
     </Panel>
   );
@@ -299,7 +299,7 @@ export function QuickActions({ actions, onNavigate }) {
         {actions.map((a) => {
           const Icon = Icons[a.icon];
           return (
-            <button key={a.navId} type="button" onClick={() => onNavigate(a.navId)} className="flex items-center gap-1.5 rounded-lg border border-line bg-navy-900/60 px-2.5 py-1.5 text-left text-[11px] font-semibold text-ink transition-colors hover:border-cyan/60 hover:text-cyan-bright">
+            <button key={a.navId} type="button" onClick={() => onNavigate(a.navId)} className="flex items-center gap-1.5 rounded-lg app-border bg-navy-900/60 px-2.5 py-1.5 text-left text-[11px] font-semibold text-ink transition-colors hover:border-cyan/60 hover:text-cyan-bright">
               <Icon className="size-3.5 shrink-0 text-cyan-bright" aria-hidden="true" /> <span className="truncate">{a.label}</span>
             </button>
           );
@@ -325,7 +325,7 @@ export function TrainingProgress({ progress }) {
             <dd className="flex items-center justify-center gap-1 text-sm font-extrabold tabular-nums text-ink">
               <Icon className="size-3 text-gold-bright" aria-hidden="true" /> {value}
             </dd>
-            <dt className="text-[9px] uppercase text-ink-dim">{label}</dt>
+            <dt className="text-[11px] uppercase text-ink-dim">{label}</dt>
           </div>
         ))}
       </dl>
